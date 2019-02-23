@@ -1,6 +1,8 @@
 README.md
 setup.py
+pietc/lex.py
 pietc/parse.py
+pietc/piet_stack.py
 pietc.egg-info/PKG-INFO
 pietc.egg-info/SOURCES.txt
 pietc.egg-info/dependency_links.txt
