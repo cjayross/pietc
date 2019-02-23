@@ -1,0 +1,8 @@
+README.md
+setup.py
+pietc/parse.py
+pietc.egg-info/PKG-INFO
+pietc.egg-info/SOURCES.txt
+pietc.egg-info/dependency_links.txt
+pietc.egg-info/requires.txt
+pietc.egg-info/top_level.txt
