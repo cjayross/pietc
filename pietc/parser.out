@@ -2,7 +2,7 @@ Created by PLY version 3.11 (http://www.dabeaz.com/ply)
 
 Unused terminals:
 
-    CONTINUEEQUALS
+    COMMENT
 
 Grammar
 
@@ -23,8 +23,8 @@ Rule 13    atom_stmt -> expr_stmt
 Rule 14    atom_stmt -> print_stmt
 Rule 15    atom_stmt -> scan_stmt
 Rule 16    atom_stmt -> flow_stmt
-Rule 17    expr_stmt -> assign_stmt
-Rule 18    expr_stmt -> value_stmt
+Rule 17    expr_stmt -> assign_expr
+Rule 18    expr_stmt -> value_expr
 Rule 19    print_stmt -> PRINT CHAR NAME
 Rule 20    print_stmt -> PRINT CHAR INTEGER
 Rule 21    print_stmt -> PRINT CHAR STRING
@@ -35,18 +35,18 @@ Rule 25    scan_stmt -> SCAN CHAR NAME
 Rule 26    scan_stmt -> SCAN INT NAME
 Rule 27    flow_stmt -> BREAK
 Rule 28    flow_stmt -> CONTINUE
-Rule 29    if_stmt -> IF compare_stmt : block
-Rule 30    if_stmt -> IF compare_stmt : block ELSE : block
-Rule 31    if_stmt -> IF compare_stmt : block elif_chain_stmt
-Rule 32    if_stmt -> IF compare_stmt : block elif_chain_stmt ELSE : block
-Rule 33    elif_chain_stmt -> ELIF compare_stmt : block
-Rule 34    elif_chain_stmt -> ELIF compare_stmt : block elif_chain_stmt
-Rule 35    while_stmt -> WHILE compare_stmt : block
+Rule 29    if_stmt -> IF value_expr : block
+Rule 30    if_stmt -> IF value_expr : block ELSE : block
+Rule 31    if_stmt -> IF value_expr : block elif_chain_stmt
+Rule 32    if_stmt -> IF value_expr : block elif_chain_stmt ELSE : block
+Rule 33    elif_chain_stmt -> ELIF value_expr : block
+Rule 34    elif_chain_stmt -> ELIF value_expr : block elif_chain_stmt
+Rule 35    while_stmt -> WHILE value_expr : block
 Rule 36    block -> simple_stmt
 Rule 37    block -> NEWLINE INDENT stmt_chain_stmt DEDENT
 Rule 38    stmt_chain_stmt -> stmt
 Rule 39    stmt_chain_stmt -> stmt stmt_chain_stmt
-Rule 40    assign_stmt -> NAME = value_expr
+Rule 40    assign_expr -> NAME = value_expr
 Rule 41    value_expr -> atom_expr
 Rule 42    value_expr -> atom_expr compare_op value_expr
 Rule 43    compare_op -> <
@@ -85,10 +85,13 @@ Terminals, with rules where they appear
 >                    : 44
 BREAK                : 27
 CHAR                 : 19 20 21 25
-CONTINUEEQUALS       : 
+COMMENT              : 
+CONTINUE             : 28
 DEDENT               : 37
 ELIF                 : 33 34
 ELSE                 : 30 32
+EQUALS               : 47
+FALSE                : 61
 GREATEROREQUAL       : 46
 IF                   : 29 30 31 32
 INDENT               : 37
@@ -101,23 +104,19 @@ NOTEQUALS            : 48
 PRINT                : 19 20 21 22 23 24
 SCAN                 : 25 26
 STRING               : 21 24
+TRUE                 : 60
 WHILE                : 35
 error                : 
 
 Nonterminals, with rules where they appear
 
-CONTINUE             : 28
-EQUALS               : 47
-FALSE                : 61
-TRUE                 : 60
-assign_stmt          : 17
+assign_expr          : 17
 atom                 : 56
 atom_chain_stmt      : 7 12
 atom_expr            : 41 42 50 51 57
 atom_stmt            : 10 11 12
 block                : 29 30 30 31 32 32 33 34 35
 compare_op           : 42
-compare_stmt         : 29 30 31 32 33 34 35
 compound_stmt        : 6
 elif_chain_stmt      : 31 32 34
 expr_stmt            : 13
@@ -132,7 +131,2084 @@ simple_stmt          : 5 36
 stmt                 : 3 38 39
 stmt_chain_stmt      : 37 39
 term                 : 49 50 51 53 54 55
-value_expr           : 40 42
-value_stmt           : 18
+value_expr           : 18 29 30 31 32 33 34 35 40 42
 while_stmt           : 9
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . file_inputs
+    (1) file_inputs -> . file_input
+    (2) file_inputs -> . file_input file_inputs
+    (3) file_input -> . stmt
+    (4) file_input -> . NEWLINE
+    (5) stmt -> . simple_stmt
+    (6) stmt -> . compound_stmt
+    (7) simple_stmt -> . atom_chain_stmt NEWLINE
+    (8) compound_stmt -> . if_stmt
+    (9) compound_stmt -> . while_stmt
+    (10) atom_chain_stmt -> . atom_stmt
+    (11) atom_chain_stmt -> . atom_stmt ;
+    (12) atom_chain_stmt -> . atom_stmt ; atom_chain_stmt
+    (29) if_stmt -> . IF value_expr : block
+    (30) if_stmt -> . IF value_expr : block ELSE : block
+    (31) if_stmt -> . IF value_expr : block elif_chain_stmt
+    (32) if_stmt -> . IF value_expr : block elif_chain_stmt ELSE : block
+    (35) while_stmt -> . WHILE value_expr : block
+    (13) atom_stmt -> . expr_stmt
+    (14) atom_stmt -> . print_stmt
+    (15) atom_stmt -> . scan_stmt
+    (16) atom_stmt -> . flow_stmt
+    (17) expr_stmt -> . assign_expr
+    (18) expr_stmt -> . value_expr
+    (19) print_stmt -> . PRINT CHAR NAME
+    (20) print_stmt -> . PRINT CHAR INTEGER
+    (21) print_stmt -> . PRINT CHAR STRING
+    (22) print_stmt -> . PRINT INT NAME
+    (23) print_stmt -> . PRINT INT INTEGER
+    (24) print_stmt -> . PRINT INT STRING
+    (25) scan_stmt -> . SCAN CHAR NAME
+    (26) scan_stmt -> . SCAN INT NAME
+    (27) flow_stmt -> . BREAK
+    (28) flow_stmt -> . CONTINUE
+    (40) assign_expr -> . NAME = value_expr
+    (41) value_expr -> . atom_expr
+    (42) value_expr -> . atom_expr compare_op value_expr
+    (49) atom_expr -> . term
+    (50) atom_expr -> . term + atom_expr
+    (51) atom_expr -> . term - atom_expr
+    (52) term -> . factor
+    (53) term -> . factor * term
+    (54) term -> . factor / term
+    (55) term -> . factor % term
+    (56) factor -> . atom
+    (57) factor -> . ( atom_expr )
+    (58) atom -> . INTEGER
+    (59) atom -> . NAME
+    (60) atom -> . TRUE
+    (61) atom -> . FALSE
+
+    NEWLINE         shift and go to state 4
+    IF              shift and go to state 11
+    WHILE           shift and go to state 13
+    PRINT           shift and go to state 19
+    SCAN            shift and go to state 22
+    BREAK           shift and go to state 23
+    CONTINUE        shift and go to state 24
+    NAME            shift and go to state 20
+    (               shift and go to state 29
+    INTEGER         shift and go to state 21
+    TRUE            shift and go to state 30
+    FALSE           shift and go to state 31
+
+    file_inputs                    shift and go to state 1
+    file_input                     shift and go to state 2
+    stmt                           shift and go to state 3
+    simple_stmt                    shift and go to state 5
+    compound_stmt                  shift and go to state 6
+    atom_chain_stmt                shift and go to state 7
+    if_stmt                        shift and go to state 8
+    while_stmt                     shift and go to state 9
+    atom_stmt                      shift and go to state 10
+    value_expr                     shift and go to state 12
+    expr_stmt                      shift and go to state 14
+    print_stmt                     shift and go to state 15
+    scan_stmt                      shift and go to state 16
+    flow_stmt                      shift and go to state 17
+    assign_expr                    shift and go to state 18
+    atom_expr                      shift and go to state 25
+    term                           shift and go to state 26
+    factor                         shift and go to state 27
+    atom                           shift and go to state 28
+
+state 1
+
+    (0) S' -> file_inputs .
+
+
+
+state 2
+
+    (1) file_inputs -> file_input .
+    (2) file_inputs -> file_input . file_inputs
+    (1) file_inputs -> . file_input
+    (2) file_inputs -> . file_input file_inputs
+    (3) file_input -> . stmt
+    (4) file_input -> . NEWLINE
+    (5) stmt -> . simple_stmt
+    (6) stmt -> . compound_stmt
+    (7) simple_stmt -> . atom_chain_stmt NEWLINE
+    (8) compound_stmt -> . if_stmt
+    (9) compound_stmt -> . while_stmt
+    (10) atom_chain_stmt -> . atom_stmt
+    (11) atom_chain_stmt -> . atom_stmt ;
+    (12) atom_chain_stmt -> . atom_stmt ; atom_chain_stmt
+    (29) if_stmt -> . IF value_expr : block
+    (30) if_stmt -> . IF value_expr : block ELSE : block
+    (31) if_stmt -> . IF value_expr : block elif_chain_stmt
+    (32) if_stmt -> . IF value_expr : block elif_chain_stmt ELSE : block
+    (35) while_stmt -> . WHILE value_expr : block
+    (13) atom_stmt -> . expr_stmt
+    (14) atom_stmt -> . print_stmt
+    (15) atom_stmt -> . scan_stmt
+    (16) atom_stmt -> . flow_stmt
+    (17) expr_stmt -> . assign_expr
+    (18) expr_stmt -> . value_expr
+    (19) print_stmt -> . PRINT CHAR NAME
+    (20) print_stmt -> . PRINT CHAR INTEGER
+    (21) print_stmt -> . PRINT CHAR STRING
+    (22) print_stmt -> . PRINT INT NAME
+    (23) print_stmt -> . PRINT INT INTEGER
+    (24) print_stmt -> . PRINT INT STRING
+    (25) scan_stmt -> . SCAN CHAR NAME
+    (26) scan_stmt -> . SCAN INT NAME
+    (27) flow_stmt -> . BREAK
+    (28) flow_stmt -> . CONTINUE
+    (40) assign_expr -> . NAME = value_expr
+    (41) value_expr -> . atom_expr
+    (42) value_expr -> . atom_expr compare_op value_expr
+    (49) atom_expr -> . term
+    (50) atom_expr -> . term + atom_expr
+    (51) atom_expr -> . term - atom_expr
+    (52) term -> . factor
+    (53) term -> . factor * term
+    (54) term -> . factor / term
+    (55) term -> . factor % term
+    (56) factor -> . atom
+    (57) factor -> . ( atom_expr )
+    (58) atom -> . INTEGER
+    (59) atom -> . NAME
+    (60) atom -> . TRUE
+    (61) atom -> . FALSE
+
+    $end            reduce using rule 1 (file_inputs -> file_input .)
+    NEWLINE         shift and go to state 4
+    IF              shift and go to state 11
+    WHILE           shift and go to state 13
+    PRINT           shift and go to state 19
+    SCAN            shift and go to state 22
+    BREAK           shift and go to state 23
+    CONTINUE        shift and go to state 24
+    NAME            shift and go to state 20
+    (               shift and go to state 29
+    INTEGER         shift and go to state 21
+    TRUE            shift and go to state 30
+    FALSE           shift and go to state 31
+
+    file_input                     shift and go to state 2
+    file_inputs                    shift and go to state 32
+    stmt                           shift and go to state 3
+    simple_stmt                    shift and go to state 5
+    compound_stmt                  shift and go to state 6
+    atom_chain_stmt                shift and go to state 7
+    if_stmt                        shift and go to state 8
+    while_stmt                     shift and go to state 9
+    atom_stmt                      shift and go to state 10
+    value_expr                     shift and go to state 12
+    expr_stmt                      shift and go to state 14
+    print_stmt                     shift and go to state 15
+    scan_stmt                      shift and go to state 16
+    flow_stmt                      shift and go to state 17
+    assign_expr                    shift and go to state 18
+    atom_expr                      shift and go to state 25
+    term                           shift and go to state 26
+    factor                         shift and go to state 27
+    atom                           shift and go to state 28
+
+state 3
+
+    (3) file_input -> stmt .
+
+    NEWLINE         reduce using rule 3 (file_input -> stmt .)
+    IF              reduce using rule 3 (file_input -> stmt .)
+    WHILE           reduce using rule 3 (file_input -> stmt .)
+    PRINT           reduce using rule 3 (file_input -> stmt .)
+    SCAN            reduce using rule 3 (file_input -> stmt .)
+    BREAK           reduce using rule 3 (file_input -> stmt .)
+    CONTINUE        reduce using rule 3 (file_input -> stmt .)
+    NAME            reduce using rule 3 (file_input -> stmt .)
+    (               reduce using rule 3 (file_input -> stmt .)
+    INTEGER         reduce using rule 3 (file_input -> stmt .)
+    TRUE            reduce using rule 3 (file_input -> stmt .)
+    FALSE           reduce using rule 3 (file_input -> stmt .)
+    $end            reduce using rule 3 (file_input -> stmt .)
+
+
+state 4
+
+    (4) file_input -> NEWLINE .
+
+    NEWLINE         reduce using rule 4 (file_input -> NEWLINE .)
+    IF              reduce using rule 4 (file_input -> NEWLINE .)
+    WHILE           reduce using rule 4 (file_input -> NEWLINE .)
+    PRINT           reduce using rule 4 (file_input -> NEWLINE .)
+    SCAN            reduce using rule 4 (file_input -> NEWLINE .)
+    BREAK           reduce using rule 4 (file_input -> NEWLINE .)
+    CONTINUE        reduce using rule 4 (file_input -> NEWLINE .)
+    NAME            reduce using rule 4 (file_input -> NEWLINE .)
+    (               reduce using rule 4 (file_input -> NEWLINE .)
+    INTEGER         reduce using rule 4 (file_input -> NEWLINE .)
+    TRUE            reduce using rule 4 (file_input -> NEWLINE .)
+    FALSE           reduce using rule 4 (file_input -> NEWLINE .)
+    $end            reduce using rule 4 (file_input -> NEWLINE .)
+
+
+state 5
+
+    (5) stmt -> simple_stmt .
+
+    NEWLINE         reduce using rule 5 (stmt -> simple_stmt .)
+    IF              reduce using rule 5 (stmt -> simple_stmt .)
+    WHILE           reduce using rule 5 (stmt -> simple_stmt .)
+    PRINT           reduce using rule 5 (stmt -> simple_stmt .)
+    SCAN            reduce using rule 5 (stmt -> simple_stmt .)
+    BREAK           reduce using rule 5 (stmt -> simple_stmt .)
+    CONTINUE        reduce using rule 5 (stmt -> simple_stmt .)
+    NAME            reduce using rule 5 (stmt -> simple_stmt .)
+    (               reduce using rule 5 (stmt -> simple_stmt .)
+    INTEGER         reduce using rule 5 (stmt -> simple_stmt .)
+    TRUE            reduce using rule 5 (stmt -> simple_stmt .)
+    FALSE           reduce using rule 5 (stmt -> simple_stmt .)
+    $end            reduce using rule 5 (stmt -> simple_stmt .)
+    DEDENT          reduce using rule 5 (stmt -> simple_stmt .)
+
+
+state 6
+
+    (6) stmt -> compound_stmt .
+
+    NEWLINE         reduce using rule 6 (stmt -> compound_stmt .)
+    IF              reduce using rule 6 (stmt -> compound_stmt .)
+    WHILE           reduce using rule 6 (stmt -> compound_stmt .)
+    PRINT           reduce using rule 6 (stmt -> compound_stmt .)
+    SCAN            reduce using rule 6 (stmt -> compound_stmt .)
+    BREAK           reduce using rule 6 (stmt -> compound_stmt .)
+    CONTINUE        reduce using rule 6 (stmt -> compound_stmt .)
+    NAME            reduce using rule 6 (stmt -> compound_stmt .)
+    (               reduce using rule 6 (stmt -> compound_stmt .)
+    INTEGER         reduce using rule 6 (stmt -> compound_stmt .)
+    TRUE            reduce using rule 6 (stmt -> compound_stmt .)
+    FALSE           reduce using rule 6 (stmt -> compound_stmt .)
+    $end            reduce using rule 6 (stmt -> compound_stmt .)
+    DEDENT          reduce using rule 6 (stmt -> compound_stmt .)
+
+
+state 7
+
+    (7) simple_stmt -> atom_chain_stmt . NEWLINE
+
+    NEWLINE         shift and go to state 33
+
+
+state 8
+
+    (8) compound_stmt -> if_stmt .
+
+    NEWLINE         reduce using rule 8 (compound_stmt -> if_stmt .)
+    IF              reduce using rule 8 (compound_stmt -> if_stmt .)
+    WHILE           reduce using rule 8 (compound_stmt -> if_stmt .)
+    PRINT           reduce using rule 8 (compound_stmt -> if_stmt .)
+    SCAN            reduce using rule 8 (compound_stmt -> if_stmt .)
+    BREAK           reduce using rule 8 (compound_stmt -> if_stmt .)
+    CONTINUE        reduce using rule 8 (compound_stmt -> if_stmt .)
+    NAME            reduce using rule 8 (compound_stmt -> if_stmt .)
+    (               reduce using rule 8 (compound_stmt -> if_stmt .)
+    INTEGER         reduce using rule 8 (compound_stmt -> if_stmt .)
+    TRUE            reduce using rule 8 (compound_stmt -> if_stmt .)
+    FALSE           reduce using rule 8 (compound_stmt -> if_stmt .)
+    $end            reduce using rule 8 (compound_stmt -> if_stmt .)
+    DEDENT          reduce using rule 8 (compound_stmt -> if_stmt .)
+
+
+state 9
+
+    (9) compound_stmt -> while_stmt .
+
+    NEWLINE         reduce using rule 9 (compound_stmt -> while_stmt .)
+    IF              reduce using rule 9 (compound_stmt -> while_stmt .)
+    WHILE           reduce using rule 9 (compound_stmt -> while_stmt .)
+    PRINT           reduce using rule 9 (compound_stmt -> while_stmt .)
+    SCAN            reduce using rule 9 (compound_stmt -> while_stmt .)
+    BREAK           reduce using rule 9 (compound_stmt -> while_stmt .)
+    CONTINUE        reduce using rule 9 (compound_stmt -> while_stmt .)
+    NAME            reduce using rule 9 (compound_stmt -> while_stmt .)
+    (               reduce using rule 9 (compound_stmt -> while_stmt .)
+    INTEGER         reduce using rule 9 (compound_stmt -> while_stmt .)
+    TRUE            reduce using rule 9 (compound_stmt -> while_stmt .)
+    FALSE           reduce using rule 9 (compound_stmt -> while_stmt .)
+    $end            reduce using rule 9 (compound_stmt -> while_stmt .)
+    DEDENT          reduce using rule 9 (compound_stmt -> while_stmt .)
+
+
+state 10
+
+    (10) atom_chain_stmt -> atom_stmt .
+    (11) atom_chain_stmt -> atom_stmt . ;
+    (12) atom_chain_stmt -> atom_stmt . ; atom_chain_stmt
+
+    NEWLINE         reduce using rule 10 (atom_chain_stmt -> atom_stmt .)
+    ;               shift and go to state 34
+
+
+state 11
+
+    (29) if_stmt -> IF . value_expr : block
+    (30) if_stmt -> IF . value_expr : block ELSE : block
+    (31) if_stmt -> IF . value_expr : block elif_chain_stmt
+    (32) if_stmt -> IF . value_expr : block elif_chain_stmt ELSE : block
+    (41) value_expr -> . atom_expr
+    (42) value_expr -> . atom_expr compare_op value_expr
+    (49) atom_expr -> . term
+    (50) atom_expr -> . term + atom_expr
+    (51) atom_expr -> . term - atom_expr
+    (52) term -> . factor
+    (53) term -> . factor * term
+    (54) term -> . factor / term
+    (55) term -> . factor % term
+    (56) factor -> . atom
+    (57) factor -> . ( atom_expr )
+    (58) atom -> . INTEGER
+    (59) atom -> . NAME
+    (60) atom -> . TRUE
+    (61) atom -> . FALSE
+
+    (               shift and go to state 29
+    INTEGER         shift and go to state 21
+    NAME            shift and go to state 36
+    TRUE            shift and go to state 30
+    FALSE           shift and go to state 31
+
+    value_expr                     shift and go to state 35
+    atom_expr                      shift and go to state 25
+    term                           shift and go to state 26
+    factor                         shift and go to state 27
+    atom                           shift and go to state 28
+
+state 12
+
+    (18) expr_stmt -> value_expr .
+
+    ;               reduce using rule 18 (expr_stmt -> value_expr .)
+    NEWLINE         reduce using rule 18 (expr_stmt -> value_expr .)
+
+
+state 13
+
+    (35) while_stmt -> WHILE . value_expr : block
+    (41) value_expr -> . atom_expr
+    (42) value_expr -> . atom_expr compare_op value_expr
+    (49) atom_expr -> . term
+    (50) atom_expr -> . term + atom_expr
+    (51) atom_expr -> . term - atom_expr
+    (52) term -> . factor
+    (53) term -> . factor * term
+    (54) term -> . factor / term
+    (55) term -> . factor % term
+    (56) factor -> . atom
+    (57) factor -> . ( atom_expr )
+    (58) atom -> . INTEGER
+    (59) atom -> . NAME
+    (60) atom -> . TRUE
+    (61) atom -> . FALSE
+
+    (               shift and go to state 29
+    INTEGER         shift and go to state 21
+    NAME            shift and go to state 36
+    TRUE            shift and go to state 30
+    FALSE           shift and go to state 31
+
+    value_expr                     shift and go to state 37
+    atom_expr                      shift and go to state 25
+    term                           shift and go to state 26
+    factor                         shift and go to state 27
+    atom                           shift and go to state 28
+
+state 14
+
+    (13) atom_stmt -> expr_stmt .
+
+    ;               reduce using rule 13 (atom_stmt -> expr_stmt .)
+    NEWLINE         reduce using rule 13 (atom_stmt -> expr_stmt .)
+
+
+state 15
+
+    (14) atom_stmt -> print_stmt .
+
+    ;               reduce using rule 14 (atom_stmt -> print_stmt .)
+    NEWLINE         reduce using rule 14 (atom_stmt -> print_stmt .)
+
+
+state 16
+
+    (15) atom_stmt -> scan_stmt .
+
+    ;               reduce using rule 15 (atom_stmt -> scan_stmt .)
+    NEWLINE         reduce using rule 15 (atom_stmt -> scan_stmt .)
+
+
+state 17
+
+    (16) atom_stmt -> flow_stmt .
+
+    ;               reduce using rule 16 (atom_stmt -> flow_stmt .)
+    NEWLINE         reduce using rule 16 (atom_stmt -> flow_stmt .)
+
+
+state 18
+
+    (17) expr_stmt -> assign_expr .
+
+    ;               reduce using rule 17 (expr_stmt -> assign_expr .)
+    NEWLINE         reduce using rule 17 (expr_stmt -> assign_expr .)
+
+
+state 19
+
+    (19) print_stmt -> PRINT . CHAR NAME
+    (20) print_stmt -> PRINT . CHAR INTEGER
+    (21) print_stmt -> PRINT . CHAR STRING
+    (22) print_stmt -> PRINT . INT NAME
+    (23) print_stmt -> PRINT . INT INTEGER
+    (24) print_stmt -> PRINT . INT STRING
+
+    CHAR            shift and go to state 38
+    INT             shift and go to state 39
+
+
+state 20
+
+    (40) assign_expr -> NAME . = value_expr
+    (59) atom -> NAME .
+
+    =               shift and go to state 40
+    *               reduce using rule 59 (atom -> NAME .)
+    /               reduce using rule 59 (atom -> NAME .)
+    %               reduce using rule 59 (atom -> NAME .)
+    +               reduce using rule 59 (atom -> NAME .)
+    -               reduce using rule 59 (atom -> NAME .)
+    <               reduce using rule 59 (atom -> NAME .)
+    >               reduce using rule 59 (atom -> NAME .)
+    LESSEROREQUAL   reduce using rule 59 (atom -> NAME .)
+    GREATEROREQUAL  reduce using rule 59 (atom -> NAME .)
+    EQUALS          reduce using rule 59 (atom -> NAME .)
+    NOTEQUALS       reduce using rule 59 (atom -> NAME .)
+    ;               reduce using rule 59 (atom -> NAME .)
+    NEWLINE         reduce using rule 59 (atom -> NAME .)
+
+
+state 21
+
+    (58) atom -> INTEGER .
+
+    *               reduce using rule 58 (atom -> INTEGER .)
+    /               reduce using rule 58 (atom -> INTEGER .)
+    %               reduce using rule 58 (atom -> INTEGER .)
+    +               reduce using rule 58 (atom -> INTEGER .)
+    -               reduce using rule 58 (atom -> INTEGER .)
+    <               reduce using rule 58 (atom -> INTEGER .)
+    >               reduce using rule 58 (atom -> INTEGER .)
+    LESSEROREQUAL   reduce using rule 58 (atom -> INTEGER .)
+    GREATEROREQUAL  reduce using rule 58 (atom -> INTEGER .)
+    EQUALS          reduce using rule 58 (atom -> INTEGER .)
+    NOTEQUALS       reduce using rule 58 (atom -> INTEGER .)
+    ;               reduce using rule 58 (atom -> INTEGER .)
+    NEWLINE         reduce using rule 58 (atom -> INTEGER .)
+    :               reduce using rule 58 (atom -> INTEGER .)
+    )               reduce using rule 58 (atom -> INTEGER .)
+
+
+state 22
+
+    (25) scan_stmt -> SCAN . CHAR NAME
+    (26) scan_stmt -> SCAN . INT NAME
+
+    CHAR            shift and go to state 41
+    INT             shift and go to state 42
+
+
+state 23
+
+    (27) flow_stmt -> BREAK .
+
+    ;               reduce using rule 27 (flow_stmt -> BREAK .)
+    NEWLINE         reduce using rule 27 (flow_stmt -> BREAK .)
+
+
+state 24
+
+    (28) flow_stmt -> CONTINUE .
+
+    ;               reduce using rule 28 (flow_stmt -> CONTINUE .)
+    NEWLINE         reduce using rule 28 (flow_stmt -> CONTINUE .)
+
+
+state 25
+
+    (41) value_expr -> atom_expr .
+    (42) value_expr -> atom_expr . compare_op value_expr
+    (43) compare_op -> . <
+    (44) compare_op -> . >
+    (45) compare_op -> . LESSEROREQUAL
+    (46) compare_op -> . GREATEROREQUAL
+    (47) compare_op -> . EQUALS
+    (48) compare_op -> . NOTEQUALS
+
+    ;               reduce using rule 41 (value_expr -> atom_expr .)
+    NEWLINE         reduce using rule 41 (value_expr -> atom_expr .)
+    :               reduce using rule 41 (value_expr -> atom_expr .)
+    <               shift and go to state 44
+    >               shift and go to state 45
+    LESSEROREQUAL   shift and go to state 46
+    GREATEROREQUAL  shift and go to state 47
+    EQUALS          shift and go to state 48
+    NOTEQUALS       shift and go to state 49
+
+    compare_op                     shift and go to state 43
+
+state 26
+
+    (49) atom_expr -> term .
+    (50) atom_expr -> term . + atom_expr
+    (51) atom_expr -> term . - atom_expr
+
+    <               reduce using rule 49 (atom_expr -> term .)
+    >               reduce using rule 49 (atom_expr -> term .)
+    LESSEROREQUAL   reduce using rule 49 (atom_expr -> term .)
+    GREATEROREQUAL  reduce using rule 49 (atom_expr -> term .)
+    EQUALS          reduce using rule 49 (atom_expr -> term .)
+    NOTEQUALS       reduce using rule 49 (atom_expr -> term .)
+    ;               reduce using rule 49 (atom_expr -> term .)
+    NEWLINE         reduce using rule 49 (atom_expr -> term .)
+    :               reduce using rule 49 (atom_expr -> term .)
+    )               reduce using rule 49 (atom_expr -> term .)
+    +               shift and go to state 50
+    -               shift and go to state 51
+
+
+state 27
+
+    (52) term -> factor .
+    (53) term -> factor . * term
+    (54) term -> factor . / term
+    (55) term -> factor . % term
+
+    +               reduce using rule 52 (term -> factor .)
+    -               reduce using rule 52 (term -> factor .)
+    <               reduce using rule 52 (term -> factor .)
+    >               reduce using rule 52 (term -> factor .)
+    LESSEROREQUAL   reduce using rule 52 (term -> factor .)
+    GREATEROREQUAL  reduce using rule 52 (term -> factor .)
+    EQUALS          reduce using rule 52 (term -> factor .)
+    NOTEQUALS       reduce using rule 52 (term -> factor .)
+    ;               reduce using rule 52 (term -> factor .)
+    NEWLINE         reduce using rule 52 (term -> factor .)
+    :               reduce using rule 52 (term -> factor .)
+    )               reduce using rule 52 (term -> factor .)
+    *               shift and go to state 52
+    /               shift and go to state 53
+    %               shift and go to state 54
+
+
+state 28
+
+    (56) factor -> atom .
+
+    *               reduce using rule 56 (factor -> atom .)
+    /               reduce using rule 56 (factor -> atom .)
+    %               reduce using rule 56 (factor -> atom .)
+    +               reduce using rule 56 (factor -> atom .)
+    -               reduce using rule 56 (factor -> atom .)
+    <               reduce using rule 56 (factor -> atom .)
+    >               reduce using rule 56 (factor -> atom .)
+    LESSEROREQUAL   reduce using rule 56 (factor -> atom .)
+    GREATEROREQUAL  reduce using rule 56 (factor -> atom .)
+    EQUALS          reduce using rule 56 (factor -> atom .)
+    NOTEQUALS       reduce using rule 56 (factor -> atom .)
+    ;               reduce using rule 56 (factor -> atom .)
+    NEWLINE         reduce using rule 56 (factor -> atom .)
+    :               reduce using rule 56 (factor -> atom .)
+    )               reduce using rule 56 (factor -> atom .)
+
+
+state 29
+
+    (57) factor -> ( . atom_expr )
+    (49) atom_expr -> . term
+    (50) atom_expr -> . term + atom_expr
+    (51) atom_expr -> . term - atom_expr
+    (52) term -> . factor
+    (53) term -> . factor * term
+    (54) term -> . factor / term
+    (55) term -> . factor % term
+    (56) factor -> . atom
+    (57) factor -> . ( atom_expr )
+    (58) atom -> . INTEGER
+    (59) atom -> . NAME
+    (60) atom -> . TRUE
+    (61) atom -> . FALSE
+
+    (               shift and go to state 29
+    INTEGER         shift and go to state 21
+    NAME            shift and go to state 36
+    TRUE            shift and go to state 30
+    FALSE           shift and go to state 31
+
+    atom_expr                      shift and go to state 55
+    term                           shift and go to state 26
+    factor                         shift and go to state 27
+    atom                           shift and go to state 28
+
+state 30
+
+    (60) atom -> TRUE .
+
+    *               reduce using rule 60 (atom -> TRUE .)
+    /               reduce using rule 60 (atom -> TRUE .)
+    %               reduce using rule 60 (atom -> TRUE .)
+    +               reduce using rule 60 (atom -> TRUE .)
+    -               reduce using rule 60 (atom -> TRUE .)
+    <               reduce using rule 60 (atom -> TRUE .)
+    >               reduce using rule 60 (atom -> TRUE .)
+    LESSEROREQUAL   reduce using rule 60 (atom -> TRUE .)
+    GREATEROREQUAL  reduce using rule 60 (atom -> TRUE .)
+    EQUALS          reduce using rule 60 (atom -> TRUE .)
+    NOTEQUALS       reduce using rule 60 (atom -> TRUE .)
+    ;               reduce using rule 60 (atom -> TRUE .)
+    NEWLINE         reduce using rule 60 (atom -> TRUE .)
+    :               reduce using rule 60 (atom -> TRUE .)
+    )               reduce using rule 60 (atom -> TRUE .)
+
+
+state 31
+
+    (61) atom -> FALSE .
+
+    *               reduce using rule 61 (atom -> FALSE .)
+    /               reduce using rule 61 (atom -> FALSE .)
+    %               reduce using rule 61 (atom -> FALSE .)
+    +               reduce using rule 61 (atom -> FALSE .)
+    -               reduce using rule 61 (atom -> FALSE .)
+    <               reduce using rule 61 (atom -> FALSE .)
+    >               reduce using rule 61 (atom -> FALSE .)
+    LESSEROREQUAL   reduce using rule 61 (atom -> FALSE .)
+    GREATEROREQUAL  reduce using rule 61 (atom -> FALSE .)
+    EQUALS          reduce using rule 61 (atom -> FALSE .)
+    NOTEQUALS       reduce using rule 61 (atom -> FALSE .)
+    ;               reduce using rule 61 (atom -> FALSE .)
+    NEWLINE         reduce using rule 61 (atom -> FALSE .)
+    :               reduce using rule 61 (atom -> FALSE .)
+    )               reduce using rule 61 (atom -> FALSE .)
+
+
+state 32
+
+    (2) file_inputs -> file_input file_inputs .
+
+    $end            reduce using rule 2 (file_inputs -> file_input file_inputs .)
+
+
+state 33
+
+    (7) simple_stmt -> atom_chain_stmt NEWLINE .
+
+    NEWLINE         reduce using rule 7 (simple_stmt -> atom_chain_stmt NEWLINE .)
+    IF              reduce using rule 7 (simple_stmt -> atom_chain_stmt NEWLINE .)
+    WHILE           reduce using rule 7 (simple_stmt -> atom_chain_stmt NEWLINE .)
+    PRINT           reduce using rule 7 (simple_stmt -> atom_chain_stmt NEWLINE .)
+    SCAN            reduce using rule 7 (simple_stmt -> atom_chain_stmt NEWLINE .)
+    BREAK           reduce using rule 7 (simple_stmt -> atom_chain_stmt NEWLINE .)
+    CONTINUE        reduce using rule 7 (simple_stmt -> atom_chain_stmt NEWLINE .)
+    NAME            reduce using rule 7 (simple_stmt -> atom_chain_stmt NEWLINE .)
+    (               reduce using rule 7 (simple_stmt -> atom_chain_stmt NEWLINE .)
+    INTEGER         reduce using rule 7 (simple_stmt -> atom_chain_stmt NEWLINE .)
+    TRUE            reduce using rule 7 (simple_stmt -> atom_chain_stmt NEWLINE .)
+    FALSE           reduce using rule 7 (simple_stmt -> atom_chain_stmt NEWLINE .)
+    $end            reduce using rule 7 (simple_stmt -> atom_chain_stmt NEWLINE .)
+    ELSE            reduce using rule 7 (simple_stmt -> atom_chain_stmt NEWLINE .)
+    ELIF            reduce using rule 7 (simple_stmt -> atom_chain_stmt NEWLINE .)
+    DEDENT          reduce using rule 7 (simple_stmt -> atom_chain_stmt NEWLINE .)
+
+
+state 34
+
+    (11) atom_chain_stmt -> atom_stmt ; .
+    (12) atom_chain_stmt -> atom_stmt ; . atom_chain_stmt
+    (10) atom_chain_stmt -> . atom_stmt
+    (11) atom_chain_stmt -> . atom_stmt ;
+    (12) atom_chain_stmt -> . atom_stmt ; atom_chain_stmt
+    (13) atom_stmt -> . expr_stmt
+    (14) atom_stmt -> . print_stmt
+    (15) atom_stmt -> . scan_stmt
+    (16) atom_stmt -> . flow_stmt
+    (17) expr_stmt -> . assign_expr
+    (18) expr_stmt -> . value_expr
+    (19) print_stmt -> . PRINT CHAR NAME
+    (20) print_stmt -> . PRINT CHAR INTEGER
+    (21) print_stmt -> . PRINT CHAR STRING
+    (22) print_stmt -> . PRINT INT NAME
+    (23) print_stmt -> . PRINT INT INTEGER
+    (24) print_stmt -> . PRINT INT STRING
+    (25) scan_stmt -> . SCAN CHAR NAME
+    (26) scan_stmt -> . SCAN INT NAME
+    (27) flow_stmt -> . BREAK
+    (28) flow_stmt -> . CONTINUE
+    (40) assign_expr -> . NAME = value_expr
+    (41) value_expr -> . atom_expr
+    (42) value_expr -> . atom_expr compare_op value_expr
+    (49) atom_expr -> . term
+    (50) atom_expr -> . term + atom_expr
+    (51) atom_expr -> . term - atom_expr
+    (52) term -> . factor
+    (53) term -> . factor * term
+    (54) term -> . factor / term
+    (55) term -> . factor % term
+    (56) factor -> . atom
+    (57) factor -> . ( atom_expr )
+    (58) atom -> . INTEGER
+    (59) atom -> . NAME
+    (60) atom -> . TRUE
+    (61) atom -> . FALSE
+
+    NEWLINE         reduce using rule 11 (atom_chain_stmt -> atom_stmt ; .)
+    PRINT           shift and go to state 19
+    SCAN            shift and go to state 22
+    BREAK           shift and go to state 23
+    CONTINUE        shift and go to state 24
+    NAME            shift and go to state 20
+    (               shift and go to state 29
+    INTEGER         shift and go to state 21
+    TRUE            shift and go to state 30
+    FALSE           shift and go to state 31
+
+    atom_stmt                      shift and go to state 10
+    atom_chain_stmt                shift and go to state 56
+    expr_stmt                      shift and go to state 14
+    print_stmt                     shift and go to state 15
+    scan_stmt                      shift and go to state 16
+    flow_stmt                      shift and go to state 17
+    assign_expr                    shift and go to state 18
+    value_expr                     shift and go to state 12
+    atom_expr                      shift and go to state 25
+    term                           shift and go to state 26
+    factor                         shift and go to state 27
+    atom                           shift and go to state 28
+
+state 35
+
+    (29) if_stmt -> IF value_expr . : block
+    (30) if_stmt -> IF value_expr . : block ELSE : block
+    (31) if_stmt -> IF value_expr . : block elif_chain_stmt
+    (32) if_stmt -> IF value_expr . : block elif_chain_stmt ELSE : block
+
+    :               shift and go to state 57
+
+
+state 36
+
+    (59) atom -> NAME .
+
+    *               reduce using rule 59 (atom -> NAME .)
+    /               reduce using rule 59 (atom -> NAME .)
+    %               reduce using rule 59 (atom -> NAME .)
+    +               reduce using rule 59 (atom -> NAME .)
+    -               reduce using rule 59 (atom -> NAME .)
+    <               reduce using rule 59 (atom -> NAME .)
+    >               reduce using rule 59 (atom -> NAME .)
+    LESSEROREQUAL   reduce using rule 59 (atom -> NAME .)
+    GREATEROREQUAL  reduce using rule 59 (atom -> NAME .)
+    EQUALS          reduce using rule 59 (atom -> NAME .)
+    NOTEQUALS       reduce using rule 59 (atom -> NAME .)
+    :               reduce using rule 59 (atom -> NAME .)
+    )               reduce using rule 59 (atom -> NAME .)
+    ;               reduce using rule 59 (atom -> NAME .)
+    NEWLINE         reduce using rule 59 (atom -> NAME .)
+
+
+state 37
+
+    (35) while_stmt -> WHILE value_expr . : block
+
+    :               shift and go to state 58
+
+
+state 38
+
+    (19) print_stmt -> PRINT CHAR . NAME
+    (20) print_stmt -> PRINT CHAR . INTEGER
+    (21) print_stmt -> PRINT CHAR . STRING
+
+    NAME            shift and go to state 59
+    INTEGER         shift and go to state 60
+    STRING          shift and go to state 61
+
+
+state 39
+
+    (22) print_stmt -> PRINT INT . NAME
+    (23) print_stmt -> PRINT INT . INTEGER
+    (24) print_stmt -> PRINT INT . STRING
+
+    NAME            shift and go to state 62
+    INTEGER         shift and go to state 63
+    STRING          shift and go to state 64
+
+
+state 40
+
+    (40) assign_expr -> NAME = . value_expr
+    (41) value_expr -> . atom_expr
+    (42) value_expr -> . atom_expr compare_op value_expr
+    (49) atom_expr -> . term
+    (50) atom_expr -> . term + atom_expr
+    (51) atom_expr -> . term - atom_expr
+    (52) term -> . factor
+    (53) term -> . factor * term
+    (54) term -> . factor / term
+    (55) term -> . factor % term
+    (56) factor -> . atom
+    (57) factor -> . ( atom_expr )
+    (58) atom -> . INTEGER
+    (59) atom -> . NAME
+    (60) atom -> . TRUE
+    (61) atom -> . FALSE
+
+    (               shift and go to state 29
+    INTEGER         shift and go to state 21
+    NAME            shift and go to state 36
+    TRUE            shift and go to state 30
+    FALSE           shift and go to state 31
+
+    value_expr                     shift and go to state 65
+    atom_expr                      shift and go to state 25
+    term                           shift and go to state 26
+    factor                         shift and go to state 27
+    atom                           shift and go to state 28
+
+state 41
+
+    (25) scan_stmt -> SCAN CHAR . NAME
+
+    NAME            shift and go to state 66
+
+
+state 42
+
+    (26) scan_stmt -> SCAN INT . NAME
+
+    NAME            shift and go to state 67
+
+
+state 43
+
+    (42) value_expr -> atom_expr compare_op . value_expr
+    (41) value_expr -> . atom_expr
+    (42) value_expr -> . atom_expr compare_op value_expr
+    (49) atom_expr -> . term
+    (50) atom_expr -> . term + atom_expr
+    (51) atom_expr -> . term - atom_expr
+    (52) term -> . factor
+    (53) term -> . factor * term
+    (54) term -> . factor / term
+    (55) term -> . factor % term
+    (56) factor -> . atom
+    (57) factor -> . ( atom_expr )
+    (58) atom -> . INTEGER
+    (59) atom -> . NAME
+    (60) atom -> . TRUE
+    (61) atom -> . FALSE
+
+    (               shift and go to state 29
+    INTEGER         shift and go to state 21
+    NAME            shift and go to state 36
+    TRUE            shift and go to state 30
+    FALSE           shift and go to state 31
+
+    atom_expr                      shift and go to state 25
+    value_expr                     shift and go to state 68
+    term                           shift and go to state 26
+    factor                         shift and go to state 27
+    atom                           shift and go to state 28
+
+state 44
+
+    (43) compare_op -> < .
+
+    (               reduce using rule 43 (compare_op -> < .)
+    INTEGER         reduce using rule 43 (compare_op -> < .)
+    NAME            reduce using rule 43 (compare_op -> < .)
+    TRUE            reduce using rule 43 (compare_op -> < .)
+    FALSE           reduce using rule 43 (compare_op -> < .)
+
+
+state 45
+
+    (44) compare_op -> > .
+
+    (               reduce using rule 44 (compare_op -> > .)
+    INTEGER         reduce using rule 44 (compare_op -> > .)
+    NAME            reduce using rule 44 (compare_op -> > .)
+    TRUE            reduce using rule 44 (compare_op -> > .)
+    FALSE           reduce using rule 44 (compare_op -> > .)
+
+
+state 46
+
+    (45) compare_op -> LESSEROREQUAL .
+
+    (               reduce using rule 45 (compare_op -> LESSEROREQUAL .)
+    INTEGER         reduce using rule 45 (compare_op -> LESSEROREQUAL .)
+    NAME            reduce using rule 45 (compare_op -> LESSEROREQUAL .)
+    TRUE            reduce using rule 45 (compare_op -> LESSEROREQUAL .)
+    FALSE           reduce using rule 45 (compare_op -> LESSEROREQUAL .)
+
+
+state 47
+
+    (46) compare_op -> GREATEROREQUAL .
+
+    (               reduce using rule 46 (compare_op -> GREATEROREQUAL .)
+    INTEGER         reduce using rule 46 (compare_op -> GREATEROREQUAL .)
+    NAME            reduce using rule 46 (compare_op -> GREATEROREQUAL .)
+    TRUE            reduce using rule 46 (compare_op -> GREATEROREQUAL .)
+    FALSE           reduce using rule 46 (compare_op -> GREATEROREQUAL .)
+
+
+state 48
+
+    (47) compare_op -> EQUALS .
+
+    (               reduce using rule 47 (compare_op -> EQUALS .)
+    INTEGER         reduce using rule 47 (compare_op -> EQUALS .)
+    NAME            reduce using rule 47 (compare_op -> EQUALS .)
+    TRUE            reduce using rule 47 (compare_op -> EQUALS .)
+    FALSE           reduce using rule 47 (compare_op -> EQUALS .)
+
+
+state 49
+
+    (48) compare_op -> NOTEQUALS .
+
+    (               reduce using rule 48 (compare_op -> NOTEQUALS .)
+    INTEGER         reduce using rule 48 (compare_op -> NOTEQUALS .)
+    NAME            reduce using rule 48 (compare_op -> NOTEQUALS .)
+    TRUE            reduce using rule 48 (compare_op -> NOTEQUALS .)
+    FALSE           reduce using rule 48 (compare_op -> NOTEQUALS .)
+
+
+state 50
+
+    (50) atom_expr -> term + . atom_expr
+    (49) atom_expr -> . term
+    (50) atom_expr -> . term + atom_expr
+    (51) atom_expr -> . term - atom_expr
+    (52) term -> . factor
+    (53) term -> . factor * term
+    (54) term -> . factor / term
+    (55) term -> . factor % term
+    (56) factor -> . atom
+    (57) factor -> . ( atom_expr )
+    (58) atom -> . INTEGER
+    (59) atom -> . NAME
+    (60) atom -> . TRUE
+    (61) atom -> . FALSE
+
+    (               shift and go to state 29
+    INTEGER         shift and go to state 21
+    NAME            shift and go to state 36
+    TRUE            shift and go to state 30
+    FALSE           shift and go to state 31
+
+    term                           shift and go to state 26
+    atom_expr                      shift and go to state 69
+    factor                         shift and go to state 27
+    atom                           shift and go to state 28
+
+state 51
+
+    (51) atom_expr -> term - . atom_expr
+    (49) atom_expr -> . term
+    (50) atom_expr -> . term + atom_expr
+    (51) atom_expr -> . term - atom_expr
+    (52) term -> . factor
+    (53) term -> . factor * term
+    (54) term -> . factor / term
+    (55) term -> . factor % term
+    (56) factor -> . atom
+    (57) factor -> . ( atom_expr )
+    (58) atom -> . INTEGER
+    (59) atom -> . NAME
+    (60) atom -> . TRUE
+    (61) atom -> . FALSE
+
+    (               shift and go to state 29
+    INTEGER         shift and go to state 21
+    NAME            shift and go to state 36
+    TRUE            shift and go to state 30
+    FALSE           shift and go to state 31
+
+    term                           shift and go to state 26
+    atom_expr                      shift and go to state 70
+    factor                         shift and go to state 27
+    atom                           shift and go to state 28
+
+state 52
+
+    (53) term -> factor * . term
+    (52) term -> . factor
+    (53) term -> . factor * term
+    (54) term -> . factor / term
+    (55) term -> . factor % term
+    (56) factor -> . atom
+    (57) factor -> . ( atom_expr )
+    (58) atom -> . INTEGER
+    (59) atom -> . NAME
+    (60) atom -> . TRUE
+    (61) atom -> . FALSE
+
+    (               shift and go to state 29
+    INTEGER         shift and go to state 21
+    NAME            shift and go to state 36
+    TRUE            shift and go to state 30
+    FALSE           shift and go to state 31
+
+    factor                         shift and go to state 27
+    term                           shift and go to state 71
+    atom                           shift and go to state 28
+
+state 53
+
+    (54) term -> factor / . term
+    (52) term -> . factor
+    (53) term -> . factor * term
+    (54) term -> . factor / term
+    (55) term -> . factor % term
+    (56) factor -> . atom
+    (57) factor -> . ( atom_expr )
+    (58) atom -> . INTEGER
+    (59) atom -> . NAME
+    (60) atom -> . TRUE
+    (61) atom -> . FALSE
+
+    (               shift and go to state 29
+    INTEGER         shift and go to state 21
+    NAME            shift and go to state 36
+    TRUE            shift and go to state 30
+    FALSE           shift and go to state 31
+
+    factor                         shift and go to state 27
+    term                           shift and go to state 72
+    atom                           shift and go to state 28
+
+state 54
+
+    (55) term -> factor % . term
+    (52) term -> . factor
+    (53) term -> . factor * term
+    (54) term -> . factor / term
+    (55) term -> . factor % term
+    (56) factor -> . atom
+    (57) factor -> . ( atom_expr )
+    (58) atom -> . INTEGER
+    (59) atom -> . NAME
+    (60) atom -> . TRUE
+    (61) atom -> . FALSE
+
+    (               shift and go to state 29
+    INTEGER         shift and go to state 21
+    NAME            shift and go to state 36
+    TRUE            shift and go to state 30
+    FALSE           shift and go to state 31
+
+    factor                         shift and go to state 27
+    term                           shift and go to state 73
+    atom                           shift and go to state 28
+
+state 55
+
+    (57) factor -> ( atom_expr . )
+
+    )               shift and go to state 74
+
+
+state 56
+
+    (12) atom_chain_stmt -> atom_stmt ; atom_chain_stmt .
+
+    NEWLINE         reduce using rule 12 (atom_chain_stmt -> atom_stmt ; atom_chain_stmt .)
+
+
+state 57
+
+    (29) if_stmt -> IF value_expr : . block
+    (30) if_stmt -> IF value_expr : . block ELSE : block
+    (31) if_stmt -> IF value_expr : . block elif_chain_stmt
+    (32) if_stmt -> IF value_expr : . block elif_chain_stmt ELSE : block
+    (36) block -> . simple_stmt
+    (37) block -> . NEWLINE INDENT stmt_chain_stmt DEDENT
+    (7) simple_stmt -> . atom_chain_stmt NEWLINE
+    (10) atom_chain_stmt -> . atom_stmt
+    (11) atom_chain_stmt -> . atom_stmt ;
+    (12) atom_chain_stmt -> . atom_stmt ; atom_chain_stmt
+    (13) atom_stmt -> . expr_stmt
+    (14) atom_stmt -> . print_stmt
+    (15) atom_stmt -> . scan_stmt
+    (16) atom_stmt -> . flow_stmt
+    (17) expr_stmt -> . assign_expr
+    (18) expr_stmt -> . value_expr
+    (19) print_stmt -> . PRINT CHAR NAME
+    (20) print_stmt -> . PRINT CHAR INTEGER
+    (21) print_stmt -> . PRINT CHAR STRING
+    (22) print_stmt -> . PRINT INT NAME
+    (23) print_stmt -> . PRINT INT INTEGER
+    (24) print_stmt -> . PRINT INT STRING
+    (25) scan_stmt -> . SCAN CHAR NAME
+    (26) scan_stmt -> . SCAN INT NAME
+    (27) flow_stmt -> . BREAK
+    (28) flow_stmt -> . CONTINUE
+    (40) assign_expr -> . NAME = value_expr
+    (41) value_expr -> . atom_expr
+    (42) value_expr -> . atom_expr compare_op value_expr
+    (49) atom_expr -> . term
+    (50) atom_expr -> . term + atom_expr
+    (51) atom_expr -> . term - atom_expr
+    (52) term -> . factor
+    (53) term -> . factor * term
+    (54) term -> . factor / term
+    (55) term -> . factor % term
+    (56) factor -> . atom
+    (57) factor -> . ( atom_expr )
+    (58) atom -> . INTEGER
+    (59) atom -> . NAME
+    (60) atom -> . TRUE
+    (61) atom -> . FALSE
+
+    NEWLINE         shift and go to state 77
+    PRINT           shift and go to state 19
+    SCAN            shift and go to state 22
+    BREAK           shift and go to state 23
+    CONTINUE        shift and go to state 24
+    NAME            shift and go to state 20
+    (               shift and go to state 29
+    INTEGER         shift and go to state 21
+    TRUE            shift and go to state 30
+    FALSE           shift and go to state 31
+
+    value_expr                     shift and go to state 12
+    block                          shift and go to state 75
+    simple_stmt                    shift and go to state 76
+    atom_chain_stmt                shift and go to state 7
+    atom_stmt                      shift and go to state 10
+    expr_stmt                      shift and go to state 14
+    print_stmt                     shift and go to state 15
+    scan_stmt                      shift and go to state 16
+    flow_stmt                      shift and go to state 17
+    assign_expr                    shift and go to state 18
+    atom_expr                      shift and go to state 25
+    term                           shift and go to state 26
+    factor                         shift and go to state 27
+    atom                           shift and go to state 28
+
+state 58
+
+    (35) while_stmt -> WHILE value_expr : . block
+    (36) block -> . simple_stmt
+    (37) block -> . NEWLINE INDENT stmt_chain_stmt DEDENT
+    (7) simple_stmt -> . atom_chain_stmt NEWLINE
+    (10) atom_chain_stmt -> . atom_stmt
+    (11) atom_chain_stmt -> . atom_stmt ;
+    (12) atom_chain_stmt -> . atom_stmt ; atom_chain_stmt
+    (13) atom_stmt -> . expr_stmt
+    (14) atom_stmt -> . print_stmt
+    (15) atom_stmt -> . scan_stmt
+    (16) atom_stmt -> . flow_stmt
+    (17) expr_stmt -> . assign_expr
+    (18) expr_stmt -> . value_expr
+    (19) print_stmt -> . PRINT CHAR NAME
+    (20) print_stmt -> . PRINT CHAR INTEGER
+    (21) print_stmt -> . PRINT CHAR STRING
+    (22) print_stmt -> . PRINT INT NAME
+    (23) print_stmt -> . PRINT INT INTEGER
+    (24) print_stmt -> . PRINT INT STRING
+    (25) scan_stmt -> . SCAN CHAR NAME
+    (26) scan_stmt -> . SCAN INT NAME
+    (27) flow_stmt -> . BREAK
+    (28) flow_stmt -> . CONTINUE
+    (40) assign_expr -> . NAME = value_expr
+    (41) value_expr -> . atom_expr
+    (42) value_expr -> . atom_expr compare_op value_expr
+    (49) atom_expr -> . term
+    (50) atom_expr -> . term + atom_expr
+    (51) atom_expr -> . term - atom_expr
+    (52) term -> . factor
+    (53) term -> . factor * term
+    (54) term -> . factor / term
+    (55) term -> . factor % term
+    (56) factor -> . atom
+    (57) factor -> . ( atom_expr )
+    (58) atom -> . INTEGER
+    (59) atom -> . NAME
+    (60) atom -> . TRUE
+    (61) atom -> . FALSE
+
+    NEWLINE         shift and go to state 77
+    PRINT           shift and go to state 19
+    SCAN            shift and go to state 22
+    BREAK           shift and go to state 23
+    CONTINUE        shift and go to state 24
+    NAME            shift and go to state 20
+    (               shift and go to state 29
+    INTEGER         shift and go to state 21
+    TRUE            shift and go to state 30
+    FALSE           shift and go to state 31
+
+    value_expr                     shift and go to state 12
+    block                          shift and go to state 78
+    simple_stmt                    shift and go to state 76
+    atom_chain_stmt                shift and go to state 7
+    atom_stmt                      shift and go to state 10
+    expr_stmt                      shift and go to state 14
+    print_stmt                     shift and go to state 15
+    scan_stmt                      shift and go to state 16
+    flow_stmt                      shift and go to state 17
+    assign_expr                    shift and go to state 18
+    atom_expr                      shift and go to state 25
+    term                           shift and go to state 26
+    factor                         shift and go to state 27
+    atom                           shift and go to state 28
+
+state 59
+
+    (19) print_stmt -> PRINT CHAR NAME .
+
+    ;               reduce using rule 19 (print_stmt -> PRINT CHAR NAME .)
+    NEWLINE         reduce using rule 19 (print_stmt -> PRINT CHAR NAME .)
+
+
+state 60
+
+    (20) print_stmt -> PRINT CHAR INTEGER .
+
+    ;               reduce using rule 20 (print_stmt -> PRINT CHAR INTEGER .)
+    NEWLINE         reduce using rule 20 (print_stmt -> PRINT CHAR INTEGER .)
+
+
+state 61
+
+    (21) print_stmt -> PRINT CHAR STRING .
+
+    ;               reduce using rule 21 (print_stmt -> PRINT CHAR STRING .)
+    NEWLINE         reduce using rule 21 (print_stmt -> PRINT CHAR STRING .)
+
+
+state 62
+
+    (22) print_stmt -> PRINT INT NAME .
+
+    ;               reduce using rule 22 (print_stmt -> PRINT INT NAME .)
+    NEWLINE         reduce using rule 22 (print_stmt -> PRINT INT NAME .)
+
+
+state 63
+
+    (23) print_stmt -> PRINT INT INTEGER .
+
+    ;               reduce using rule 23 (print_stmt -> PRINT INT INTEGER .)
+    NEWLINE         reduce using rule 23 (print_stmt -> PRINT INT INTEGER .)
+
+
+state 64
+
+    (24) print_stmt -> PRINT INT STRING .
+
+    ;               reduce using rule 24 (print_stmt -> PRINT INT STRING .)
+    NEWLINE         reduce using rule 24 (print_stmt -> PRINT INT STRING .)
+
+
+state 65
+
+    (40) assign_expr -> NAME = value_expr .
+
+    ;               reduce using rule 40 (assign_expr -> NAME = value_expr .)
+    NEWLINE         reduce using rule 40 (assign_expr -> NAME = value_expr .)
+
+
+state 66
+
+    (25) scan_stmt -> SCAN CHAR NAME .
+
+    ;               reduce using rule 25 (scan_stmt -> SCAN CHAR NAME .)
+    NEWLINE         reduce using rule 25 (scan_stmt -> SCAN CHAR NAME .)
+
+
+state 67
+
+    (26) scan_stmt -> SCAN INT NAME .
+
+    ;               reduce using rule 26 (scan_stmt -> SCAN INT NAME .)
+    NEWLINE         reduce using rule 26 (scan_stmt -> SCAN INT NAME .)
+
+
+state 68
+
+    (42) value_expr -> atom_expr compare_op value_expr .
+
+    ;               reduce using rule 42 (value_expr -> atom_expr compare_op value_expr .)
+    NEWLINE         reduce using rule 42 (value_expr -> atom_expr compare_op value_expr .)
+    :               reduce using rule 42 (value_expr -> atom_expr compare_op value_expr .)
+
+
+state 69
+
+    (50) atom_expr -> term + atom_expr .
+
+    <               reduce using rule 50 (atom_expr -> term + atom_expr .)
+    >               reduce using rule 50 (atom_expr -> term + atom_expr .)
+    LESSEROREQUAL   reduce using rule 50 (atom_expr -> term + atom_expr .)
+    GREATEROREQUAL  reduce using rule 50 (atom_expr -> term + atom_expr .)
+    EQUALS          reduce using rule 50 (atom_expr -> term + atom_expr .)
+    NOTEQUALS       reduce using rule 50 (atom_expr -> term + atom_expr .)
+    ;               reduce using rule 50 (atom_expr -> term + atom_expr .)
+    NEWLINE         reduce using rule 50 (atom_expr -> term + atom_expr .)
+    :               reduce using rule 50 (atom_expr -> term + atom_expr .)
+    )               reduce using rule 50 (atom_expr -> term + atom_expr .)
+
+
+state 70
+
+    (51) atom_expr -> term - atom_expr .
+
+    <               reduce using rule 51 (atom_expr -> term - atom_expr .)
+    >               reduce using rule 51 (atom_expr -> term - atom_expr .)
+    LESSEROREQUAL   reduce using rule 51 (atom_expr -> term - atom_expr .)
+    GREATEROREQUAL  reduce using rule 51 (atom_expr -> term - atom_expr .)
+    EQUALS          reduce using rule 51 (atom_expr -> term - atom_expr .)
+    NOTEQUALS       reduce using rule 51 (atom_expr -> term - atom_expr .)
+    ;               reduce using rule 51 (atom_expr -> term - atom_expr .)
+    NEWLINE         reduce using rule 51 (atom_expr -> term - atom_expr .)
+    :               reduce using rule 51 (atom_expr -> term - atom_expr .)
+    )               reduce using rule 51 (atom_expr -> term - atom_expr .)
+
+
+state 71
+
+    (53) term -> factor * term .
+
+    +               reduce using rule 53 (term -> factor * term .)
+    -               reduce using rule 53 (term -> factor * term .)
+    <               reduce using rule 53 (term -> factor * term .)
+    >               reduce using rule 53 (term -> factor * term .)
+    LESSEROREQUAL   reduce using rule 53 (term -> factor * term .)
+    GREATEROREQUAL  reduce using rule 53 (term -> factor * term .)
+    EQUALS          reduce using rule 53 (term -> factor * term .)
+    NOTEQUALS       reduce using rule 53 (term -> factor * term .)
+    ;               reduce using rule 53 (term -> factor * term .)
+    NEWLINE         reduce using rule 53 (term -> factor * term .)
+    :               reduce using rule 53 (term -> factor * term .)
+    )               reduce using rule 53 (term -> factor * term .)
+
+
+state 72
+
+    (54) term -> factor / term .
+
+    +               reduce using rule 54 (term -> factor / term .)
+    -               reduce using rule 54 (term -> factor / term .)
+    <               reduce using rule 54 (term -> factor / term .)
+    >               reduce using rule 54 (term -> factor / term .)
+    LESSEROREQUAL   reduce using rule 54 (term -> factor / term .)
+    GREATEROREQUAL  reduce using rule 54 (term -> factor / term .)
+    EQUALS          reduce using rule 54 (term -> factor / term .)
+    NOTEQUALS       reduce using rule 54 (term -> factor / term .)
+    ;               reduce using rule 54 (term -> factor / term .)
+    NEWLINE         reduce using rule 54 (term -> factor / term .)
+    :               reduce using rule 54 (term -> factor / term .)
+    )               reduce using rule 54 (term -> factor / term .)
+
+
+state 73
+
+    (55) term -> factor % term .
+
+    +               reduce using rule 55 (term -> factor % term .)
+    -               reduce using rule 55 (term -> factor % term .)
+    <               reduce using rule 55 (term -> factor % term .)
+    >               reduce using rule 55 (term -> factor % term .)
+    LESSEROREQUAL   reduce using rule 55 (term -> factor % term .)
+    GREATEROREQUAL  reduce using rule 55 (term -> factor % term .)
+    EQUALS          reduce using rule 55 (term -> factor % term .)
+    NOTEQUALS       reduce using rule 55 (term -> factor % term .)
+    ;               reduce using rule 55 (term -> factor % term .)
+    NEWLINE         reduce using rule 55 (term -> factor % term .)
+    :               reduce using rule 55 (term -> factor % term .)
+    )               reduce using rule 55 (term -> factor % term .)
+
+
+state 74
+
+    (57) factor -> ( atom_expr ) .
+
+    *               reduce using rule 57 (factor -> ( atom_expr ) .)
+    /               reduce using rule 57 (factor -> ( atom_expr ) .)
+    %               reduce using rule 57 (factor -> ( atom_expr ) .)
+    +               reduce using rule 57 (factor -> ( atom_expr ) .)
+    -               reduce using rule 57 (factor -> ( atom_expr ) .)
+    <               reduce using rule 57 (factor -> ( atom_expr ) .)
+    >               reduce using rule 57 (factor -> ( atom_expr ) .)
+    LESSEROREQUAL   reduce using rule 57 (factor -> ( atom_expr ) .)
+    GREATEROREQUAL  reduce using rule 57 (factor -> ( atom_expr ) .)
+    EQUALS          reduce using rule 57 (factor -> ( atom_expr ) .)
+    NOTEQUALS       reduce using rule 57 (factor -> ( atom_expr ) .)
+    ;               reduce using rule 57 (factor -> ( atom_expr ) .)
+    NEWLINE         reduce using rule 57 (factor -> ( atom_expr ) .)
+    :               reduce using rule 57 (factor -> ( atom_expr ) .)
+    )               reduce using rule 57 (factor -> ( atom_expr ) .)
+
+
+state 75
+
+    (29) if_stmt -> IF value_expr : block .
+    (30) if_stmt -> IF value_expr : block . ELSE : block
+    (31) if_stmt -> IF value_expr : block . elif_chain_stmt
+    (32) if_stmt -> IF value_expr : block . elif_chain_stmt ELSE : block
+    (33) elif_chain_stmt -> . ELIF value_expr : block
+    (34) elif_chain_stmt -> . ELIF value_expr : block elif_chain_stmt
+
+    NEWLINE         reduce using rule 29 (if_stmt -> IF value_expr : block .)
+    IF              reduce using rule 29 (if_stmt -> IF value_expr : block .)
+    WHILE           reduce using rule 29 (if_stmt -> IF value_expr : block .)
+    PRINT           reduce using rule 29 (if_stmt -> IF value_expr : block .)
+    SCAN            reduce using rule 29 (if_stmt -> IF value_expr : block .)
+    BREAK           reduce using rule 29 (if_stmt -> IF value_expr : block .)
+    CONTINUE        reduce using rule 29 (if_stmt -> IF value_expr : block .)
+    NAME            reduce using rule 29 (if_stmt -> IF value_expr : block .)
+    (               reduce using rule 29 (if_stmt -> IF value_expr : block .)
+    INTEGER         reduce using rule 29 (if_stmt -> IF value_expr : block .)
+    TRUE            reduce using rule 29 (if_stmt -> IF value_expr : block .)
+    FALSE           reduce using rule 29 (if_stmt -> IF value_expr : block .)
+    $end            reduce using rule 29 (if_stmt -> IF value_expr : block .)
+    DEDENT          reduce using rule 29 (if_stmt -> IF value_expr : block .)
+    ELSE            shift and go to state 79
+    ELIF            shift and go to state 81
+
+    elif_chain_stmt                shift and go to state 80
+
+state 76
+
+    (36) block -> simple_stmt .
+
+    ELSE            reduce using rule 36 (block -> simple_stmt .)
+    ELIF            reduce using rule 36 (block -> simple_stmt .)
+    NEWLINE         reduce using rule 36 (block -> simple_stmt .)
+    IF              reduce using rule 36 (block -> simple_stmt .)
+    WHILE           reduce using rule 36 (block -> simple_stmt .)
+    PRINT           reduce using rule 36 (block -> simple_stmt .)
+    SCAN            reduce using rule 36 (block -> simple_stmt .)
+    BREAK           reduce using rule 36 (block -> simple_stmt .)
+    CONTINUE        reduce using rule 36 (block -> simple_stmt .)
+    NAME            reduce using rule 36 (block -> simple_stmt .)
+    (               reduce using rule 36 (block -> simple_stmt .)
+    INTEGER         reduce using rule 36 (block -> simple_stmt .)
+    TRUE            reduce using rule 36 (block -> simple_stmt .)
+    FALSE           reduce using rule 36 (block -> simple_stmt .)
+    $end            reduce using rule 36 (block -> simple_stmt .)
+    DEDENT          reduce using rule 36 (block -> simple_stmt .)
+
+
+state 77
+
+    (37) block -> NEWLINE . INDENT stmt_chain_stmt DEDENT
+
+    INDENT          shift and go to state 82
+
+
+state 78
+
+    (35) while_stmt -> WHILE value_expr : block .
+
+    NEWLINE         reduce using rule 35 (while_stmt -> WHILE value_expr : block .)
+    IF              reduce using rule 35 (while_stmt -> WHILE value_expr : block .)
+    WHILE           reduce using rule 35 (while_stmt -> WHILE value_expr : block .)
+    PRINT           reduce using rule 35 (while_stmt -> WHILE value_expr : block .)
+    SCAN            reduce using rule 35 (while_stmt -> WHILE value_expr : block .)
+    BREAK           reduce using rule 35 (while_stmt -> WHILE value_expr : block .)
+    CONTINUE        reduce using rule 35 (while_stmt -> WHILE value_expr : block .)
+    NAME            reduce using rule 35 (while_stmt -> WHILE value_expr : block .)
+    (               reduce using rule 35 (while_stmt -> WHILE value_expr : block .)
+    INTEGER         reduce using rule 35 (while_stmt -> WHILE value_expr : block .)
+    TRUE            reduce using rule 35 (while_stmt -> WHILE value_expr : block .)
+    FALSE           reduce using rule 35 (while_stmt -> WHILE value_expr : block .)
+    $end            reduce using rule 35 (while_stmt -> WHILE value_expr : block .)
+    DEDENT          reduce using rule 35 (while_stmt -> WHILE value_expr : block .)
+
+
+state 79
+
+    (30) if_stmt -> IF value_expr : block ELSE . : block
+
+    :               shift and go to state 83
+
+
+state 80
+
+    (31) if_stmt -> IF value_expr : block elif_chain_stmt .
+    (32) if_stmt -> IF value_expr : block elif_chain_stmt . ELSE : block
+
+    NEWLINE         reduce using rule 31 (if_stmt -> IF value_expr : block elif_chain_stmt .)
+    IF              reduce using rule 31 (if_stmt -> IF value_expr : block elif_chain_stmt .)
+    WHILE           reduce using rule 31 (if_stmt -> IF value_expr : block elif_chain_stmt .)
+    PRINT           reduce using rule 31 (if_stmt -> IF value_expr : block elif_chain_stmt .)
+    SCAN            reduce using rule 31 (if_stmt -> IF value_expr : block elif_chain_stmt .)
+    BREAK           reduce using rule 31 (if_stmt -> IF value_expr : block elif_chain_stmt .)
+    CONTINUE        reduce using rule 31 (if_stmt -> IF value_expr : block elif_chain_stmt .)
+    NAME            reduce using rule 31 (if_stmt -> IF value_expr : block elif_chain_stmt .)
+    (               reduce using rule 31 (if_stmt -> IF value_expr : block elif_chain_stmt .)
+    INTEGER         reduce using rule 31 (if_stmt -> IF value_expr : block elif_chain_stmt .)
+    TRUE            reduce using rule 31 (if_stmt -> IF value_expr : block elif_chain_stmt .)
+    FALSE           reduce using rule 31 (if_stmt -> IF value_expr : block elif_chain_stmt .)
+    $end            reduce using rule 31 (if_stmt -> IF value_expr : block elif_chain_stmt .)
+    DEDENT          reduce using rule 31 (if_stmt -> IF value_expr : block elif_chain_stmt .)
+    ELSE            shift and go to state 84
+
+
+state 81
+
+    (33) elif_chain_stmt -> ELIF . value_expr : block
+    (34) elif_chain_stmt -> ELIF . value_expr : block elif_chain_stmt
+    (41) value_expr -> . atom_expr
+    (42) value_expr -> . atom_expr compare_op value_expr
+    (49) atom_expr -> . term
+    (50) atom_expr -> . term + atom_expr
+    (51) atom_expr -> . term - atom_expr
+    (52) term -> . factor
+    (53) term -> . factor * term
+    (54) term -> . factor / term
+    (55) term -> . factor % term
+    (56) factor -> . atom
+    (57) factor -> . ( atom_expr )
+    (58) atom -> . INTEGER
+    (59) atom -> . NAME
+    (60) atom -> . TRUE
+    (61) atom -> . FALSE
+
+    (               shift and go to state 29
+    INTEGER         shift and go to state 21
+    NAME            shift and go to state 36
+    TRUE            shift and go to state 30
+    FALSE           shift and go to state 31
+
+    value_expr                     shift and go to state 85
+    atom_expr                      shift and go to state 25
+    term                           shift and go to state 26
+    factor                         shift and go to state 27
+    atom                           shift and go to state 28
+
+state 82
+
+    (37) block -> NEWLINE INDENT . stmt_chain_stmt DEDENT
+    (38) stmt_chain_stmt -> . stmt
+    (39) stmt_chain_stmt -> . stmt stmt_chain_stmt
+    (5) stmt -> . simple_stmt
+    (6) stmt -> . compound_stmt
+    (7) simple_stmt -> . atom_chain_stmt NEWLINE
+    (8) compound_stmt -> . if_stmt
+    (9) compound_stmt -> . while_stmt
+    (10) atom_chain_stmt -> . atom_stmt
+    (11) atom_chain_stmt -> . atom_stmt ;
+    (12) atom_chain_stmt -> . atom_stmt ; atom_chain_stmt
+    (29) if_stmt -> . IF value_expr : block
+    (30) if_stmt -> . IF value_expr : block ELSE : block
+    (31) if_stmt -> . IF value_expr : block elif_chain_stmt
+    (32) if_stmt -> . IF value_expr : block elif_chain_stmt ELSE : block
+    (35) while_stmt -> . WHILE value_expr : block
+    (13) atom_stmt -> . expr_stmt
+    (14) atom_stmt -> . print_stmt
+    (15) atom_stmt -> . scan_stmt
+    (16) atom_stmt -> . flow_stmt
+    (17) expr_stmt -> . assign_expr
+    (18) expr_stmt -> . value_expr
+    (19) print_stmt -> . PRINT CHAR NAME
+    (20) print_stmt -> . PRINT CHAR INTEGER
+    (21) print_stmt -> . PRINT CHAR STRING
+    (22) print_stmt -> . PRINT INT NAME
+    (23) print_stmt -> . PRINT INT INTEGER
+    (24) print_stmt -> . PRINT INT STRING
+    (25) scan_stmt -> . SCAN CHAR NAME
+    (26) scan_stmt -> . SCAN INT NAME
+    (27) flow_stmt -> . BREAK
+    (28) flow_stmt -> . CONTINUE
+    (40) assign_expr -> . NAME = value_expr
+    (41) value_expr -> . atom_expr
+    (42) value_expr -> . atom_expr compare_op value_expr
+    (49) atom_expr -> . term
+    (50) atom_expr -> . term + atom_expr
+    (51) atom_expr -> . term - atom_expr
+    (52) term -> . factor
+    (53) term -> . factor * term
+    (54) term -> . factor / term
+    (55) term -> . factor % term
+    (56) factor -> . atom
+    (57) factor -> . ( atom_expr )
+    (58) atom -> . INTEGER
+    (59) atom -> . NAME
+    (60) atom -> . TRUE
+    (61) atom -> . FALSE
+
+    IF              shift and go to state 11
+    WHILE           shift and go to state 13
+    PRINT           shift and go to state 19
+    SCAN            shift and go to state 22
+    BREAK           shift and go to state 23
+    CONTINUE        shift and go to state 24
+    NAME            shift and go to state 20
+    (               shift and go to state 29
+    INTEGER         shift and go to state 21
+    TRUE            shift and go to state 30
+    FALSE           shift and go to state 31
+
+    stmt_chain_stmt                shift and go to state 86
+    stmt                           shift and go to state 87
+    simple_stmt                    shift and go to state 5
+    compound_stmt                  shift and go to state 6
+    atom_chain_stmt                shift and go to state 7
+    if_stmt                        shift and go to state 8
+    while_stmt                     shift and go to state 9
+    atom_stmt                      shift and go to state 10
+    value_expr                     shift and go to state 12
+    expr_stmt                      shift and go to state 14
+    print_stmt                     shift and go to state 15
+    scan_stmt                      shift and go to state 16
+    flow_stmt                      shift and go to state 17
+    assign_expr                    shift and go to state 18
+    atom_expr                      shift and go to state 25
+    term                           shift and go to state 26
+    factor                         shift and go to state 27
+    atom                           shift and go to state 28
+
+state 83
+
+    (30) if_stmt -> IF value_expr : block ELSE : . block
+    (36) block -> . simple_stmt
+    (37) block -> . NEWLINE INDENT stmt_chain_stmt DEDENT
+    (7) simple_stmt -> . atom_chain_stmt NEWLINE
+    (10) atom_chain_stmt -> . atom_stmt
+    (11) atom_chain_stmt -> . atom_stmt ;
+    (12) atom_chain_stmt -> . atom_stmt ; atom_chain_stmt
+    (13) atom_stmt -> . expr_stmt
+    (14) atom_stmt -> . print_stmt
+    (15) atom_stmt -> . scan_stmt
+    (16) atom_stmt -> . flow_stmt
+    (17) expr_stmt -> . assign_expr
+    (18) expr_stmt -> . value_expr
+    (19) print_stmt -> . PRINT CHAR NAME
+    (20) print_stmt -> . PRINT CHAR INTEGER
+    (21) print_stmt -> . PRINT CHAR STRING
+    (22) print_stmt -> . PRINT INT NAME
+    (23) print_stmt -> . PRINT INT INTEGER
+    (24) print_stmt -> . PRINT INT STRING
+    (25) scan_stmt -> . SCAN CHAR NAME
+    (26) scan_stmt -> . SCAN INT NAME
+    (27) flow_stmt -> . BREAK
+    (28) flow_stmt -> . CONTINUE
+    (40) assign_expr -> . NAME = value_expr
+    (41) value_expr -> . atom_expr
+    (42) value_expr -> . atom_expr compare_op value_expr
+    (49) atom_expr -> . term
+    (50) atom_expr -> . term + atom_expr
+    (51) atom_expr -> . term - atom_expr
+    (52) term -> . factor
+    (53) term -> . factor * term
+    (54) term -> . factor / term
+    (55) term -> . factor % term
+    (56) factor -> . atom
+    (57) factor -> . ( atom_expr )
+    (58) atom -> . INTEGER
+    (59) atom -> . NAME
+    (60) atom -> . TRUE
+    (61) atom -> . FALSE
+
+    NEWLINE         shift and go to state 77
+    PRINT           shift and go to state 19
+    SCAN            shift and go to state 22
+    BREAK           shift and go to state 23
+    CONTINUE        shift and go to state 24
+    NAME            shift and go to state 20
+    (               shift and go to state 29
+    INTEGER         shift and go to state 21
+    TRUE            shift and go to state 30
+    FALSE           shift and go to state 31
+
+    value_expr                     shift and go to state 12
+    block                          shift and go to state 88
+    simple_stmt                    shift and go to state 76
+    atom_chain_stmt                shift and go to state 7
+    atom_stmt                      shift and go to state 10
+    expr_stmt                      shift and go to state 14
+    print_stmt                     shift and go to state 15
+    scan_stmt                      shift and go to state 16
+    flow_stmt                      shift and go to state 17
+    assign_expr                    shift and go to state 18
+    atom_expr                      shift and go to state 25
+    term                           shift and go to state 26
+    factor                         shift and go to state 27
+    atom                           shift and go to state 28
+
+state 84
+
+    (32) if_stmt -> IF value_expr : block elif_chain_stmt ELSE . : block
+
+    :               shift and go to state 89
+
+
+state 85
+
+    (33) elif_chain_stmt -> ELIF value_expr . : block
+    (34) elif_chain_stmt -> ELIF value_expr . : block elif_chain_stmt
+
+    :               shift and go to state 90
+
+
+state 86
+
+    (37) block -> NEWLINE INDENT stmt_chain_stmt . DEDENT
+
+    DEDENT          shift and go to state 91
+
+
+state 87
+
+    (38) stmt_chain_stmt -> stmt .
+    (39) stmt_chain_stmt -> stmt . stmt_chain_stmt
+    (38) stmt_chain_stmt -> . stmt
+    (39) stmt_chain_stmt -> . stmt stmt_chain_stmt
+    (5) stmt -> . simple_stmt
+    (6) stmt -> . compound_stmt
+    (7) simple_stmt -> . atom_chain_stmt NEWLINE
+    (8) compound_stmt -> . if_stmt
+    (9) compound_stmt -> . while_stmt
+    (10) atom_chain_stmt -> . atom_stmt
+    (11) atom_chain_stmt -> . atom_stmt ;
+    (12) atom_chain_stmt -> . atom_stmt ; atom_chain_stmt
+    (29) if_stmt -> . IF value_expr : block
+    (30) if_stmt -> . IF value_expr : block ELSE : block
+    (31) if_stmt -> . IF value_expr : block elif_chain_stmt
+    (32) if_stmt -> . IF value_expr : block elif_chain_stmt ELSE : block
+    (35) while_stmt -> . WHILE value_expr : block
+    (13) atom_stmt -> . expr_stmt
+    (14) atom_stmt -> . print_stmt
+    (15) atom_stmt -> . scan_stmt
+    (16) atom_stmt -> . flow_stmt
+    (17) expr_stmt -> . assign_expr
+    (18) expr_stmt -> . value_expr
+    (19) print_stmt -> . PRINT CHAR NAME
+    (20) print_stmt -> . PRINT CHAR INTEGER
+    (21) print_stmt -> . PRINT CHAR STRING
+    (22) print_stmt -> . PRINT INT NAME
+    (23) print_stmt -> . PRINT INT INTEGER
+    (24) print_stmt -> . PRINT INT STRING
+    (25) scan_stmt -> . SCAN CHAR NAME
+    (26) scan_stmt -> . SCAN INT NAME
+    (27) flow_stmt -> . BREAK
+    (28) flow_stmt -> . CONTINUE
+    (40) assign_expr -> . NAME = value_expr
+    (41) value_expr -> . atom_expr
+    (42) value_expr -> . atom_expr compare_op value_expr
+    (49) atom_expr -> . term
+    (50) atom_expr -> . term + atom_expr
+    (51) atom_expr -> . term - atom_expr
+    (52) term -> . factor
+    (53) term -> . factor * term
+    (54) term -> . factor / term
+    (55) term -> . factor % term
+    (56) factor -> . atom
+    (57) factor -> . ( atom_expr )
+    (58) atom -> . INTEGER
+    (59) atom -> . NAME
+    (60) atom -> . TRUE
+    (61) atom -> . FALSE
+
+    DEDENT          reduce using rule 38 (stmt_chain_stmt -> stmt .)
+    IF              shift and go to state 11
+    WHILE           shift and go to state 13
+    PRINT           shift and go to state 19
+    SCAN            shift and go to state 22
+    BREAK           shift and go to state 23
+    CONTINUE        shift and go to state 24
+    NAME            shift and go to state 20
+    (               shift and go to state 29
+    INTEGER         shift and go to state 21
+    TRUE            shift and go to state 30
+    FALSE           shift and go to state 31
+
+    stmt                           shift and go to state 87
+    stmt_chain_stmt                shift and go to state 92
+    simple_stmt                    shift and go to state 5
+    compound_stmt                  shift and go to state 6
+    atom_chain_stmt                shift and go to state 7
+    if_stmt                        shift and go to state 8
+    while_stmt                     shift and go to state 9
+    atom_stmt                      shift and go to state 10
+    value_expr                     shift and go to state 12
+    expr_stmt                      shift and go to state 14
+    print_stmt                     shift and go to state 15
+    scan_stmt                      shift and go to state 16
+    flow_stmt                      shift and go to state 17
+    assign_expr                    shift and go to state 18
+    atom_expr                      shift and go to state 25
+    term                           shift and go to state 26
+    factor                         shift and go to state 27
+    atom                           shift and go to state 28
+
+state 88
+
+    (30) if_stmt -> IF value_expr : block ELSE : block .
+
+    NEWLINE         reduce using rule 30 (if_stmt -> IF value_expr : block ELSE : block .)
+    IF              reduce using rule 30 (if_stmt -> IF value_expr : block ELSE : block .)
+    WHILE           reduce using rule 30 (if_stmt -> IF value_expr : block ELSE : block .)
+    PRINT           reduce using rule 30 (if_stmt -> IF value_expr : block ELSE : block .)
+    SCAN            reduce using rule 30 (if_stmt -> IF value_expr : block ELSE : block .)
+    BREAK           reduce using rule 30 (if_stmt -> IF value_expr : block ELSE : block .)
+    CONTINUE        reduce using rule 30 (if_stmt -> IF value_expr : block ELSE : block .)
+    NAME            reduce using rule 30 (if_stmt -> IF value_expr : block ELSE : block .)
+    (               reduce using rule 30 (if_stmt -> IF value_expr : block ELSE : block .)
+    INTEGER         reduce using rule 30 (if_stmt -> IF value_expr : block ELSE : block .)
+    TRUE            reduce using rule 30 (if_stmt -> IF value_expr : block ELSE : block .)
+    FALSE           reduce using rule 30 (if_stmt -> IF value_expr : block ELSE : block .)
+    $end            reduce using rule 30 (if_stmt -> IF value_expr : block ELSE : block .)
+    DEDENT          reduce using rule 30 (if_stmt -> IF value_expr : block ELSE : block .)
+
+
+state 89
+
+    (32) if_stmt -> IF value_expr : block elif_chain_stmt ELSE : . block
+    (36) block -> . simple_stmt
+    (37) block -> . NEWLINE INDENT stmt_chain_stmt DEDENT
+    (7) simple_stmt -> . atom_chain_stmt NEWLINE
+    (10) atom_chain_stmt -> . atom_stmt
+    (11) atom_chain_stmt -> . atom_stmt ;
+    (12) atom_chain_stmt -> . atom_stmt ; atom_chain_stmt
+    (13) atom_stmt -> . expr_stmt
+    (14) atom_stmt -> . print_stmt
+    (15) atom_stmt -> . scan_stmt
+    (16) atom_stmt -> . flow_stmt
+    (17) expr_stmt -> . assign_expr
+    (18) expr_stmt -> . value_expr
+    (19) print_stmt -> . PRINT CHAR NAME
+    (20) print_stmt -> . PRINT CHAR INTEGER
+    (21) print_stmt -> . PRINT CHAR STRING
+    (22) print_stmt -> . PRINT INT NAME
+    (23) print_stmt -> . PRINT INT INTEGER
+    (24) print_stmt -> . PRINT INT STRING
+    (25) scan_stmt -> . SCAN CHAR NAME
+    (26) scan_stmt -> . SCAN INT NAME
+    (27) flow_stmt -> . BREAK
+    (28) flow_stmt -> . CONTINUE
+    (40) assign_expr -> . NAME = value_expr
+    (41) value_expr -> . atom_expr
+    (42) value_expr -> . atom_expr compare_op value_expr
+    (49) atom_expr -> . term
+    (50) atom_expr -> . term + atom_expr
+    (51) atom_expr -> . term - atom_expr
+    (52) term -> . factor
+    (53) term -> . factor * term
+    (54) term -> . factor / term
+    (55) term -> . factor % term
+    (56) factor -> . atom
+    (57) factor -> . ( atom_expr )
+    (58) atom -> . INTEGER
+    (59) atom -> . NAME
+    (60) atom -> . TRUE
+    (61) atom -> . FALSE
+
+    NEWLINE         shift and go to state 77
+    PRINT           shift and go to state 19
+    SCAN            shift and go to state 22
+    BREAK           shift and go to state 23
+    CONTINUE        shift and go to state 24
+    NAME            shift and go to state 20
+    (               shift and go to state 29
+    INTEGER         shift and go to state 21
+    TRUE            shift and go to state 30
+    FALSE           shift and go to state 31
+
+    value_expr                     shift and go to state 12
+    block                          shift and go to state 93
+    simple_stmt                    shift and go to state 76
+    atom_chain_stmt                shift and go to state 7
+    atom_stmt                      shift and go to state 10
+    expr_stmt                      shift and go to state 14
+    print_stmt                     shift and go to state 15
+    scan_stmt                      shift and go to state 16
+    flow_stmt                      shift and go to state 17
+    assign_expr                    shift and go to state 18
+    atom_expr                      shift and go to state 25
+    term                           shift and go to state 26
+    factor                         shift and go to state 27
+    atom                           shift and go to state 28
+
+state 90
+
+    (33) elif_chain_stmt -> ELIF value_expr : . block
+    (34) elif_chain_stmt -> ELIF value_expr : . block elif_chain_stmt
+    (36) block -> . simple_stmt
+    (37) block -> . NEWLINE INDENT stmt_chain_stmt DEDENT
+    (7) simple_stmt -> . atom_chain_stmt NEWLINE
+    (10) atom_chain_stmt -> . atom_stmt
+    (11) atom_chain_stmt -> . atom_stmt ;
+    (12) atom_chain_stmt -> . atom_stmt ; atom_chain_stmt
+    (13) atom_stmt -> . expr_stmt
+    (14) atom_stmt -> . print_stmt
+    (15) atom_stmt -> . scan_stmt
+    (16) atom_stmt -> . flow_stmt
+    (17) expr_stmt -> . assign_expr
+    (18) expr_stmt -> . value_expr
+    (19) print_stmt -> . PRINT CHAR NAME
+    (20) print_stmt -> . PRINT CHAR INTEGER
+    (21) print_stmt -> . PRINT CHAR STRING
+    (22) print_stmt -> . PRINT INT NAME
+    (23) print_stmt -> . PRINT INT INTEGER
+    (24) print_stmt -> . PRINT INT STRING
+    (25) scan_stmt -> . SCAN CHAR NAME
+    (26) scan_stmt -> . SCAN INT NAME
+    (27) flow_stmt -> . BREAK
+    (28) flow_stmt -> . CONTINUE
+    (40) assign_expr -> . NAME = value_expr
+    (41) value_expr -> . atom_expr
+    (42) value_expr -> . atom_expr compare_op value_expr
+    (49) atom_expr -> . term
+    (50) atom_expr -> . term + atom_expr
+    (51) atom_expr -> . term - atom_expr
+    (52) term -> . factor
+    (53) term -> . factor * term
+    (54) term -> . factor / term
+    (55) term -> . factor % term
+    (56) factor -> . atom
+    (57) factor -> . ( atom_expr )
+    (58) atom -> . INTEGER
+    (59) atom -> . NAME
+    (60) atom -> . TRUE
+    (61) atom -> . FALSE
+
+    NEWLINE         shift and go to state 77
+    PRINT           shift and go to state 19
+    SCAN            shift and go to state 22
+    BREAK           shift and go to state 23
+    CONTINUE        shift and go to state 24
+    NAME            shift and go to state 20
+    (               shift and go to state 29
+    INTEGER         shift and go to state 21
+    TRUE            shift and go to state 30
+    FALSE           shift and go to state 31
+
+    value_expr                     shift and go to state 12
+    block                          shift and go to state 94
+    simple_stmt                    shift and go to state 76
+    atom_chain_stmt                shift and go to state 7
+    atom_stmt                      shift and go to state 10
+    expr_stmt                      shift and go to state 14
+    print_stmt                     shift and go to state 15
+    scan_stmt                      shift and go to state 16
+    flow_stmt                      shift and go to state 17
+    assign_expr                    shift and go to state 18
+    atom_expr                      shift and go to state 25
+    term                           shift and go to state 26
+    factor                         shift and go to state 27
+    atom                           shift and go to state 28
+
+state 91
+
+    (37) block -> NEWLINE INDENT stmt_chain_stmt DEDENT .
+
+    ELSE            reduce using rule 37 (block -> NEWLINE INDENT stmt_chain_stmt DEDENT .)
+    ELIF            reduce using rule 37 (block -> NEWLINE INDENT stmt_chain_stmt DEDENT .)
+    NEWLINE         reduce using rule 37 (block -> NEWLINE INDENT stmt_chain_stmt DEDENT .)
+    IF              reduce using rule 37 (block -> NEWLINE INDENT stmt_chain_stmt DEDENT .)
+    WHILE           reduce using rule 37 (block -> NEWLINE INDENT stmt_chain_stmt DEDENT .)
+    PRINT           reduce using rule 37 (block -> NEWLINE INDENT stmt_chain_stmt DEDENT .)
+    SCAN            reduce using rule 37 (block -> NEWLINE INDENT stmt_chain_stmt DEDENT .)
+    BREAK           reduce using rule 37 (block -> NEWLINE INDENT stmt_chain_stmt DEDENT .)
+    CONTINUE        reduce using rule 37 (block -> NEWLINE INDENT stmt_chain_stmt DEDENT .)
+    NAME            reduce using rule 37 (block -> NEWLINE INDENT stmt_chain_stmt DEDENT .)
+    (               reduce using rule 37 (block -> NEWLINE INDENT stmt_chain_stmt DEDENT .)
+    INTEGER         reduce using rule 37 (block -> NEWLINE INDENT stmt_chain_stmt DEDENT .)
+    TRUE            reduce using rule 37 (block -> NEWLINE INDENT stmt_chain_stmt DEDENT .)
+    FALSE           reduce using rule 37 (block -> NEWLINE INDENT stmt_chain_stmt DEDENT .)
+    $end            reduce using rule 37 (block -> NEWLINE INDENT stmt_chain_stmt DEDENT .)
+    DEDENT          reduce using rule 37 (block -> NEWLINE INDENT stmt_chain_stmt DEDENT .)
+
+
+state 92
+
+    (39) stmt_chain_stmt -> stmt stmt_chain_stmt .
+
+    DEDENT          reduce using rule 39 (stmt_chain_stmt -> stmt stmt_chain_stmt .)
+
+
+state 93
+
+    (32) if_stmt -> IF value_expr : block elif_chain_stmt ELSE : block .
+
+    NEWLINE         reduce using rule 32 (if_stmt -> IF value_expr : block elif_chain_stmt ELSE : block .)
+    IF              reduce using rule 32 (if_stmt -> IF value_expr : block elif_chain_stmt ELSE : block .)
+    WHILE           reduce using rule 32 (if_stmt -> IF value_expr : block elif_chain_stmt ELSE : block .)
+    PRINT           reduce using rule 32 (if_stmt -> IF value_expr : block elif_chain_stmt ELSE : block .)
+    SCAN            reduce using rule 32 (if_stmt -> IF value_expr : block elif_chain_stmt ELSE : block .)
+    BREAK           reduce using rule 32 (if_stmt -> IF value_expr : block elif_chain_stmt ELSE : block .)
+    CONTINUE        reduce using rule 32 (if_stmt -> IF value_expr : block elif_chain_stmt ELSE : block .)
+    NAME            reduce using rule 32 (if_stmt -> IF value_expr : block elif_chain_stmt ELSE : block .)
+    (               reduce using rule 32 (if_stmt -> IF value_expr : block elif_chain_stmt ELSE : block .)
+    INTEGER         reduce using rule 32 (if_stmt -> IF value_expr : block elif_chain_stmt ELSE : block .)
+    TRUE            reduce using rule 32 (if_stmt -> IF value_expr : block elif_chain_stmt ELSE : block .)
+    FALSE           reduce using rule 32 (if_stmt -> IF value_expr : block elif_chain_stmt ELSE : block .)
+    $end            reduce using rule 32 (if_stmt -> IF value_expr : block elif_chain_stmt ELSE : block .)
+    DEDENT          reduce using rule 32 (if_stmt -> IF value_expr : block elif_chain_stmt ELSE : block .)
+
+
+state 94
+
+    (33) elif_chain_stmt -> ELIF value_expr : block .
+    (34) elif_chain_stmt -> ELIF value_expr : block . elif_chain_stmt
+    (33) elif_chain_stmt -> . ELIF value_expr : block
+    (34) elif_chain_stmt -> . ELIF value_expr : block elif_chain_stmt
+
+    ELSE            reduce using rule 33 (elif_chain_stmt -> ELIF value_expr : block .)
+    NEWLINE         reduce using rule 33 (elif_chain_stmt -> ELIF value_expr : block .)
+    IF              reduce using rule 33 (elif_chain_stmt -> ELIF value_expr : block .)
+    WHILE           reduce using rule 33 (elif_chain_stmt -> ELIF value_expr : block .)
+    PRINT           reduce using rule 33 (elif_chain_stmt -> ELIF value_expr : block .)
+    SCAN            reduce using rule 33 (elif_chain_stmt -> ELIF value_expr : block .)
+    BREAK           reduce using rule 33 (elif_chain_stmt -> ELIF value_expr : block .)
+    CONTINUE        reduce using rule 33 (elif_chain_stmt -> ELIF value_expr : block .)
+    NAME            reduce using rule 33 (elif_chain_stmt -> ELIF value_expr : block .)
+    (               reduce using rule 33 (elif_chain_stmt -> ELIF value_expr : block .)
+    INTEGER         reduce using rule 33 (elif_chain_stmt -> ELIF value_expr : block .)
+    TRUE            reduce using rule 33 (elif_chain_stmt -> ELIF value_expr : block .)
+    FALSE           reduce using rule 33 (elif_chain_stmt -> ELIF value_expr : block .)
+    $end            reduce using rule 33 (elif_chain_stmt -> ELIF value_expr : block .)
+    DEDENT          reduce using rule 33 (elif_chain_stmt -> ELIF value_expr : block .)
+    ELIF            shift and go to state 81
+
+    elif_chain_stmt                shift and go to state 95
+
+state 95
+
+    (34) elif_chain_stmt -> ELIF value_expr : block elif_chain_stmt .
+
+    ELSE            reduce using rule 34 (elif_chain_stmt -> ELIF value_expr : block elif_chain_stmt .)
+    NEWLINE         reduce using rule 34 (elif_chain_stmt -> ELIF value_expr : block elif_chain_stmt .)
+    IF              reduce using rule 34 (elif_chain_stmt -> ELIF value_expr : block elif_chain_stmt .)
+    WHILE           reduce using rule 34 (elif_chain_stmt -> ELIF value_expr : block elif_chain_stmt .)
+    PRINT           reduce using rule 34 (elif_chain_stmt -> ELIF value_expr : block elif_chain_stmt .)
+    SCAN            reduce using rule 34 (elif_chain_stmt -> ELIF value_expr : block elif_chain_stmt .)
+    BREAK           reduce using rule 34 (elif_chain_stmt -> ELIF value_expr : block elif_chain_stmt .)
+    CONTINUE        reduce using rule 34 (elif_chain_stmt -> ELIF value_expr : block elif_chain_stmt .)
+    NAME            reduce using rule 34 (elif_chain_stmt -> ELIF value_expr : block elif_chain_stmt .)
+    (               reduce using rule 34 (elif_chain_stmt -> ELIF value_expr : block elif_chain_stmt .)
+    INTEGER         reduce using rule 34 (elif_chain_stmt -> ELIF value_expr : block elif_chain_stmt .)
+    TRUE            reduce using rule 34 (elif_chain_stmt -> ELIF value_expr : block elif_chain_stmt .)
+    FALSE           reduce using rule 34 (elif_chain_stmt -> ELIF value_expr : block elif_chain_stmt .)
+    $end            reduce using rule 34 (elif_chain_stmt -> ELIF value_expr : block elif_chain_stmt .)
+    DEDENT          reduce using rule 34 (elif_chain_stmt -> ELIF value_expr : block elif_chain_stmt .)
 

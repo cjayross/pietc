@@ -41,8 +41,8 @@ def p_atom_stmt (p):
     pass
 
 def p_expr_stmt (p):
-    '''expr_stmt : assign_stmt
-                 | value_stmt'''
+    '''expr_stmt : assign_expr
+                 | value_expr'''
     pass
 
 def p_print_stmt (p):
@@ -65,19 +65,19 @@ def p_flow_stmt (p):
     pass
 
 def p_if_stmt (p):
-    '''if_stmt : IF compare_stmt ":" block
-               | IF compare_stmt ":" block ELSE ":" block
-               | IF compare_stmt ":" block elif_chain_stmt
-               | IF compare_stmt ":" block elif_chain_stmt ELSE ":" block'''
+    '''if_stmt : IF value_expr ":" block
+               | IF value_expr ":" block ELSE ":" block
+               | IF value_expr ":" block elif_chain_stmt
+               | IF value_expr ":" block elif_chain_stmt ELSE ":" block'''
     pass
 
 def p_elif_chain_stmt (p):
-    '''elif_chain_stmt : ELIF compare_stmt ":" block
-                       | ELIF compare_stmt ":" block elif_chain_stmt'''
+    '''elif_chain_stmt : ELIF value_expr ":" block
+                       | ELIF value_expr ":" block elif_chain_stmt'''
     pass
 
 def p_while_stmt (p):
-    '''while_stmt : WHILE compare_stmt ":" block'''
+    '''while_stmt : WHILE value_expr ":" block'''
     pass
 
 def p_block (p):
@@ -90,8 +90,8 @@ def p_stmt_chain_stmt (p):
                        | stmt stmt_chain_stmt'''
     pass
 
-def p_assign_stmt (p):
-    '''assign_stmt : NAME "=" value_expr'''
+def p_assign_expr (p):
+    '''assign_expr : NAME "=" value_expr'''
     pass
 
 def p_value_expr (p):
@@ -132,9 +132,8 @@ def p_atom (p):
             | FALSE'''
     pass
 
-yacc.yacc()
+def p_error (p):
+    raise Exception("Syntax error: %s" % p.value)
 
-for line in open('sample.pc').read():
-    if not line: continue
-    res = yacc.parse(line)
-    print(res)
+yacc.yacc()
+yacc.parse(open('sample.pc').read())

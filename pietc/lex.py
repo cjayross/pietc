@@ -19,11 +19,14 @@ tokens = (
         'CHAR',
         'INT',
         'BREAK',
-        'CONTINUE'
+        'CONTINUE',
         'EQUALS',
         'NOTEQUALS',
         'GREATEROREQUAL',
         'LESSEROREQUAL',
+        'TRUE',
+        'FALSE',
+        'COMMENT',
         )
 
 literals = (
@@ -40,6 +43,7 @@ literals = (
         '!',
         '(',
         ')',
+        '#',
         )
 
 reserved = {
@@ -62,6 +66,13 @@ t_ignore = " \t"
 def t_error (tok):
     print("Illegal character encountered: '%s'" % tok.value[0])
     tok.lexer.skip(1)
+
+def t_COMMENT (tok):
+    r"\#.*\n"
+    tok.lexer.lineno += 1
+    tok.value = len(tok.value) - tok.value.rfind('\n') - 1
+    tok.type = 'NEWLINE'
+    return tok
 
 def t_NEWLINE (tok):
     r"\n(?:\s*(?:[#].*)?\n)*\s*"
@@ -135,7 +146,7 @@ class IndentLexer (object):
         while True:
             tok = self.token()
             if not tok: break
-            print("{}, {}".format(tok.type, tok.value))
+            #print(tok.type)
 
 lexer = IndentLexer(lex.lex())
 lexer.run('sample.pc')

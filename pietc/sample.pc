@@ -1,7 +1,5 @@
-x = 10
-y = "STRING"
+x = 0 # hello world
+# blah blah
+
 while x < 10:
-    print int x
-    if y <= 5:
-        break
-    else: x = x - 1
+  x = x + 1
