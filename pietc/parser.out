@@ -1,0 +1,138 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Unused terminals:
+
+    CONTINUEEQUALS
+
+Grammar
+
+Rule 0     S' -> file_inputs
+Rule 1     file_inputs -> file_input
+Rule 2     file_inputs -> file_input file_inputs
+Rule 3     file_input -> stmt
+Rule 4     file_input -> NEWLINE
+Rule 5     stmt -> simple_stmt
+Rule 6     stmt -> compound_stmt
+Rule 7     simple_stmt -> atom_chain_stmt NEWLINE
+Rule 8     compound_stmt -> if_stmt
+Rule 9     compound_stmt -> while_stmt
+Rule 10    atom_chain_stmt -> atom_stmt
+Rule 11    atom_chain_stmt -> atom_stmt ;
+Rule 12    atom_chain_stmt -> atom_stmt ; atom_chain_stmt
+Rule 13    atom_stmt -> expr_stmt
+Rule 14    atom_stmt -> print_stmt
+Rule 15    atom_stmt -> scan_stmt
+Rule 16    atom_stmt -> flow_stmt
+Rule 17    expr_stmt -> assign_stmt
+Rule 18    expr_stmt -> value_stmt
+Rule 19    print_stmt -> PRINT CHAR NAME
+Rule 20    print_stmt -> PRINT CHAR INTEGER
+Rule 21    print_stmt -> PRINT CHAR STRING
+Rule 22    print_stmt -> PRINT INT NAME
+Rule 23    print_stmt -> PRINT INT INTEGER
+Rule 24    print_stmt -> PRINT INT STRING
+Rule 25    scan_stmt -> SCAN CHAR NAME
+Rule 26    scan_stmt -> SCAN INT NAME
+Rule 27    flow_stmt -> BREAK
+Rule 28    flow_stmt -> CONTINUE
+Rule 29    if_stmt -> IF compare_stmt : block
+Rule 30    if_stmt -> IF compare_stmt : block ELSE : block
+Rule 31    if_stmt -> IF compare_stmt : block elif_chain_stmt
+Rule 32    if_stmt -> IF compare_stmt : block elif_chain_stmt ELSE : block
+Rule 33    elif_chain_stmt -> ELIF compare_stmt : block
+Rule 34    elif_chain_stmt -> ELIF compare_stmt : block elif_chain_stmt
+Rule 35    while_stmt -> WHILE compare_stmt : block
+Rule 36    block -> simple_stmt
+Rule 37    block -> NEWLINE INDENT stmt_chain_stmt DEDENT
+Rule 38    stmt_chain_stmt -> stmt
+Rule 39    stmt_chain_stmt -> stmt stmt_chain_stmt
+Rule 40    assign_stmt -> NAME = value_expr
+Rule 41    value_expr -> atom_expr
+Rule 42    value_expr -> atom_expr compare_op value_expr
+Rule 43    compare_op -> <
+Rule 44    compare_op -> >
+Rule 45    compare_op -> LESSEROREQUAL
+Rule 46    compare_op -> GREATEROREQUAL
+Rule 47    compare_op -> EQUALS
+Rule 48    compare_op -> NOTEQUALS
+Rule 49    atom_expr -> term
+Rule 50    atom_expr -> term + atom_expr
+Rule 51    atom_expr -> term - atom_expr
+Rule 52    term -> factor
+Rule 53    term -> factor * term
+Rule 54    term -> factor / term
+Rule 55    term -> factor % term
+Rule 56    factor -> atom
+Rule 57    factor -> ( atom_expr )
+Rule 58    atom -> INTEGER
+Rule 59    atom -> NAME
+Rule 60    atom -> TRUE
+Rule 61    atom -> FALSE
+
+Terminals, with rules where they appear
+
+%                    : 55
+(                    : 57
+)                    : 57
+*                    : 53
++                    : 50
+-                    : 51
+/                    : 54
+:                    : 29 30 30 31 32 32 33 34 35
+;                    : 11 12
+<                    : 43
+=                    : 40
+>                    : 44
+BREAK                : 27
+CHAR                 : 19 20 21 25
+CONTINUEEQUALS       : 
+DEDENT               : 37
+ELIF                 : 33 34
+ELSE                 : 30 32
+GREATEROREQUAL       : 46
+IF                   : 29 30 31 32
+INDENT               : 37
+INT                  : 22 23 24 26
+INTEGER              : 20 23 58
+LESSEROREQUAL        : 45
+NAME                 : 19 22 25 26 40 59
+NEWLINE              : 4 7 37
+NOTEQUALS            : 48
+PRINT                : 19 20 21 22 23 24
+SCAN                 : 25 26
+STRING               : 21 24
+WHILE                : 35
+error                : 
+
+Nonterminals, with rules where they appear
+
+CONTINUE             : 28
+EQUALS               : 47
+FALSE                : 61
+TRUE                 : 60
+assign_stmt          : 17
+atom                 : 56
+atom_chain_stmt      : 7 12
+atom_expr            : 41 42 50 51 57
+atom_stmt            : 10 11 12
+block                : 29 30 30 31 32 32 33 34 35
+compare_op           : 42
+compare_stmt         : 29 30 31 32 33 34 35
+compound_stmt        : 6
+elif_chain_stmt      : 31 32 34
+expr_stmt            : 13
+factor               : 52 53 54 55
+file_input           : 1 2
+file_inputs          : 2 0
+flow_stmt            : 16
+if_stmt              : 8
+print_stmt           : 14
+scan_stmt            : 15
+simple_stmt          : 5 36
+stmt                 : 3 38 39
+stmt_chain_stmt      : 37 39
+term                 : 49 50 51 53 54 55
+value_expr           : 40 42
+value_stmt           : 18
+while_stmt           : 9
+

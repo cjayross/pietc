@@ -1,14 +1,12 @@
-file_inputs: file_input | file_inputs
+file_inputs: file_input | file_input file_inputs
 file_input: NEWLINE | stmt
 
 stmt: simple_stmt | compound_stmt
-simple_stmt: chain_stmt NEWLINE
+simple_stmt: atom_chain_stmt NEWLINE
 atom_chain_stmt: atom_stmt | atom_stmt ';' | atom_stmt ';' atom_chain_stmt
 atom_stmt: expr_stmt | print_stmt | scan_stmt | flow_stmt
 compound_stmt: if_stmt | while_stmt
 
-const_stmt: 'const' NAME '=' INTEGER
-          | 'const' NAME '=' STRING
 print_stmt: 'print' 'char' NAME
           | 'print' 'char' INTEGER
           | 'print' 'char' STRING
@@ -16,12 +14,8 @@ print_stmt: 'print' 'char' NAME
           | 'print' 'int' INTEGER
           | 'print' 'int' STRING
 scan_stmt: 'scan' 'char' NAME
-         | 'scan' 'char' INTEGER
-         | 'scan' 'char' STRING
          | 'scan' 'int' NAME
-         | 'scan' 'int' INTEGER
-         | 'scan' 'int' STRING
-flow_stmt: 'break' | 'scan'
+flow_stmt: 'break' | 'continue'
 expr_stmt: assign_expr | value_expr
 if_stmt: 'if' compare_stmt ':' block
        | 'if' compare_stmt ':' block 'else' ':' block
@@ -30,7 +24,30 @@ if_stmt: 'if' compare_stmt ':' block
 elif_chain_stmt: 'elif' compare_stmt ':' block
                | 'elif' compare_stmt ':' block elif_chain_stmt
 while_stmt: 'while' compare_stmt ':' block
-
 block: simple_stmt
      | NEWLINE INDENT stmt_chain_stmt DEDENT
 stmt_chain_stmt: stmt | stmt stmt_chain_stmt
+
+assign_expr: NAME '=' value_expr
+value_expr: atom_expr
+          | atom_expr compare_op value_expr
+atom_expr: term
+         | term '+' atom_expr
+         | term '-' atom_expr
+
+compare_op: '<'
+          | '>'
+          | '<='
+          | '>='
+          | '=='
+          | '!='
+term: factor
+    | factor '*' term
+    | factor '/' term
+    | factor '%' term
+factor: '(' atom_expr ')'
+      | atom
+atom: INTEGER
+    | NAME
+    | 'True'
+    | 'False'

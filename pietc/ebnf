@@ -22,4 +22,4 @@ atom_expr: term (('+' | '-') term)*
 compare_op: '<' | '>' | '<=' | '>=' | '==' | '!='
 term: factor (('*' | '/' | '%') factor)*
 factor: '(' atom_expr ')' | atom
-atom: INTEGER | NAME
+atom: INTEGER | NAME | 'True' | 'False'
