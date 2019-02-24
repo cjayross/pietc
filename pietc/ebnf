@@ -1,0 +1,25 @@
+file_input: (NEWLINE | stmt)* EOF
+
+stmt: simple_stmt | compound_stmt
+simple_stmt: atom_stmt (';' atom_stmt)* [';'] NEWLINE
+atom_stmt: expr_stmt | print_stmt | scan_stmt | flow_stmt
+compound_stmt: if_stmt | while_stmt
+
+const_stmt: 'const' NAME '=' (INTEGER | STRING)
+print_stmt: 'print' ('char' | 'int') (NAME | INTEGER | STRING)
+scan_stmt: 'scan' ('char' | 'int') NAME
+flow_stmt: 'break' | 'continue'
+expr_stmt: assign_expr | compare_expr | atom_expr
+if_stmt: 'if' compare_expr ':' block ('elif' compare_stmt ':' block)* ['else' ':' block]
+while_stmt: 'while' compare_stmt ':' block
+
+block: simple_stmt | NEWLINE INDENT stmt+ DEDENT
+
+assign_expr: NAME '=' atom_expr
+compare_expr: atom_expr (compare_op atom_expr)*
+atom_expr: term (('+' | '-') term)*
+
+compare_op: '<' | '>' | '<=' | '>=' | '==' | '!='
+term: factor (('*' | '/' | '%') factor)*
+factor: '(' atom_expr ')' | atom
+atom: INTEGER | NAME
