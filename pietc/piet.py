@@ -99,11 +99,11 @@ takes the command structure and build a list of commands
 #                 ["print_string","Hello World!"]
 #                 ]
 
-commands = [ ["push", 3],
-            ["push",2],
-            ["less",0],
-            ["out_num",0]
-]
+# commands = [ ["push", 3],
+#             ["push",2],
+#             ["less",0],
+#             ["out_num",0]
+# ]
 
 color_indices = [random.randrange(6),random.randrange(3)]
 color = colors[color_indices[0]][color_indices[1]]
