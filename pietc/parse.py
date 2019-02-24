@@ -173,6 +173,7 @@ def p_factor (p):
 def p_atom (p):
     '''atom : INTEGER
             | NAME
+            | STRING
             | TRUE
             | FALSE'''
     if p[1] == 'True':
