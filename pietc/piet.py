@@ -4,10 +4,10 @@ import itertools
 from PIL import Image
 
 # list of value, command
-__all__ = ['commands', 'colors']
+__all__ = ['funcs', 'colors']
 
 # darkness, hue
-commands = {'push':(1,0), 'pop':(2,0),
+funcs = {'push':(1,0), 'pop':(2,0),
             'add':(0,1), 'subtract':(1,1), 'multiply':(2,1),
             'divide':(0,2), 'mod':(1,2), 'invert':(2,2),
             'greater':(0,3),'pointer':(1,3),'switch':(2,3),
@@ -194,8 +194,8 @@ def command_image(command_list):
         z[:image.shape[0],:image.shape[1]] = image
         image = z
 
-        color_indices[0] = (color_indices[0] + commands[x[0]][1]) % 6
-        color_indices[1] = (color_indices[1] + commands[x[0]][0]) % 3
+        color_indices[0] = (color_indices[0] + funcs[x[0]][1]) % 6
+        color_indices[1] = (color_indices[1] + funcs[x[0]][0]) % 3
         color = colors[color_indices[0]][color_indices[1]]
 
     y = np.full((image.shape[0]+1,max(image.shape[1],3),3),0,int)
@@ -249,8 +249,8 @@ def concatenate_images(program):
             while_img = y
 
             #create branch
-            color_indices[0] = (color_indices[0] + commands["pointer"][1]) % 6
-            color_indices[1] = (color_indices[1] + commands["pointer"][0]) % 3
+            color_indices[0] = (color_indices[0] + funcs["pointer"][1]) % 6
+            color_indices[1] = (color_indices[1] + funcs["pointer"][0]) % 3
             color = colors[color_indices[0]][color_indices[1]]
 
             while_img[-1,0] = color
@@ -278,8 +278,8 @@ def concatenate_images(program):
             img = np.concatenate((img,img1),axis=0)
 
             #create branch
-            color_indices[0] = (color_indices[0] + commands["pointer"][1]) % 6
-            color_indices[1] = (color_indices[1] + commands["pointer"][0]) % 3
+            color_indices[0] = (color_indices[0] + funcs["pointer"][1]) % 6
+            color_indices[1] = (color_indices[1] + funcs["pointer"][0]) % 3
             color = colors[color_indices[0]][color_indices[1]]
 
             n = img.shape[0]
