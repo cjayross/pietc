@@ -61,47 +61,56 @@ takes the command structure and build a list of commands
 #                 ["end_while",0]
 #                 ]
 
-# test_commands = [
-#                 ["push",4],
-#                 ["push",2],
-#                 ["if",0],
-#                         ["mod",0],
-#                         ["invert",0],
-#                     ["end_cond",0],
-#                     ["print_string", "4 is divisible by 2"],
-#                 ["end_if",0]
-#                 ]
-
-#Euclidean Algorithm
-# test_commands = [
-#                 ["push",13],
-#                 ["push",5],
-#                 ["copy2",0],
-#                 ["out_num",0],
-#                 ["push",32],
-#                 ["out_char",0],
-#                 ["out_num",0],
-#                 ["while",0],
+# test_commands = [["push",1],
+#                  ["while",0],
+#                      ["duplicate",0],
+#                      ["push",6],
+#                      ["greater",0],
+#                      ["invert",0],
+#                      ["end_cond",0],
+#                     ["if",0],
 #                         ["duplicate",0],
-#                         ["push",0],
-#                         ["equals",0],
-#                         ["invert",0],
+#                         ["push",2],
+#                         ["greater",0],
 #                         ["end_cond",0],
-#                     ["duplicate",0],
-#                     ["push",3],
-#                     ["push",1],
-#                     ["roll",0],
-#                     ["mod",0],
-#                     ["push",32],
-#                     ["out_char",0],
-#                     ["duplicate",0],
-#                     ["out_num",0],
+#                         ["duplicate",0],
+#                         ["out_num",0],
+#                         ["push",32],
+#                         ["out_char",0],
+#                     ["end_if"],
 #                 ["end_while"]
 #                 ]
 
+#Euclidean Algorithm
 test_commands = [
-                ["print_string","Hello World!"]
+                ["push",28],
+                ["push",21],
+                ["copy2",0],
+                ["out_num",0],
+                ["push",32],
+                ["out_char",0],
+                ["out_num",0],
+                ["while",0],
+                        ["duplicate",0],
+                        ["push",0],
+                        ["equals",0],
+                        ["invert",0],
+                        ["end_cond",0],
+                    ["duplicate",0],
+                    ["push",3],
+                    ["push",1],
+                    ["roll",0],
+                    ["mod",0],
+                    ["push",32],
+                    ["out_char",0],
+                    ["duplicate",0],
+                    ["out_num",0],
+                ["end_while"]
                 ]
+
+# test_commands = [
+#                 ["print_string","Hello World!"]
+#                 ]
 
 # test_commands = [['push',18],['push',2],['divide',0],['out_num',0]]
 
@@ -280,23 +289,26 @@ def concatenate_images(program):
 
             #make it so it separates each while and if statement on its own level
             img1 = concatenate_images(condition_program)
-            img1 = extend_black(img1,max(img1.shape[1],img.shape[1],17))
-            img  = extend_black(img,max(img1.shape[1],img.shape[1],17))
+            img1 = extend_black(img1,max(img1.shape[1],img.shape[1],17+4))
+            img  = extend_black(img,max(img1.shape[1],img.shape[1],17+4))
+            img = np.concatenate((img,img1),axis=0)
 
             #create branch
             color_indices[0] = (color_indices[0] + commands["pointer"][1]) % 6
             color_indices[1] = (color_indices[1] + commands["pointer"][0]) % 3
             color = colors[color_indices[0]][color_indices[1]]
 
+            n = img.shape[0]
+            m = img.shape[1]
             y = np.full((img.shape[0]+1,img.shape[1]),colors[6][0],dtype=(int,3))
             y[:img.shape[0]] = img
             img = y
             img[-1,0] = color
 
             block_img = concatenate_images(block_program)
-            block_img = extend_black(block_img,19)
+            block_img = extend_black(block_img,max(19,img.shape[0]))
             y = np.full((block_img.shape[0]+2,block_img.shape[1],3),0,int)
-            y[2:block_img.shape[0]+2] = block_img
+            y[2:block_img.shape[0]+2,:block_img.shape[1]] = block_img
             y[0,0] = colors[6][0]
             y[1,0] = colors[6][0]
             block_img = y
@@ -310,6 +322,7 @@ def concatenate_images(program):
             y = np.full((block_img.shape[0]+1,block_img.shape[1],3),0,int)
             y[1:block_img.shape[0]+1,:block_img.shape[1]] = block_img
             y[0][0] = colors[6][0]
+            print(block_img.shape)
 
             block_img = y
             y = np.full((block_img.shape[0],block_img.shape[1]+1,3),0,int)
@@ -322,11 +335,44 @@ def concatenate_images(program):
             block_img[1,0] = color
             block_img[-1,0] = color
 
+            
+
             if img.shape[0] < 21:
                 #assume img.shape[0] > 1
-                y = np.full((21,img.shape[1],3),0,int)
+                y = np.full((block_img.shape[0],img.shape[1],3),0,int)
                 y[:img.shape[0]] = img
+                print(y.shape,block_img.shape)
                 img = np.concatenate((y,block_img),axis=1)
+                offset = 0
+            else:
+                img = np.concatenate((y,block_img),axis=1)
+                offset = img.shape[0]+4-21
+                y = np.full((block_img.shape[0]+offset,block_img.shape[1],3),0,int)
+                y[offset:block_img.shape[0]+offset,:] = block_img
+                block_img = y
+
+            y = np.full((img.shape[0]+3,img.shape[1],3),0,int)
+            y[:img.shape[0],:img.shape[1]] = img
+            img = y
+
+            for i in range(n+1,img.shape[0]):
+                img[i][0] = colors[6][0]
+
+            # print(img.shape)
+            img[n,m] = color
+            # img[n,m-1] = color
+            
+            for i in range(0,img.shape[0]):
+                img[i][m-3] = colors[6][0]
+            img[1+offset][m-1] = colors[6][0]
+            img[1+offset][m-2] = colors[6][0]
+            img[1+offset][m-3] = color
+            for i in range(0,m-3):
+                img[n+3][i] = colors[6][0]
+            img[n+3][m-2] = color
+            img[n+3][m-3] = color
+            img[n+3][m-4] = color
+
 
 
 
