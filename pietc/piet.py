@@ -45,32 +45,63 @@ takes the command structure and build a list of commands
 #                 ["push",10],
 #                 ["out_char",0]]
 
-test_commands = [
-                ["push",4],
-                ["push",1],
-                ["while",0],
-                ["greater",0],
-                ["end_cond",0],
-                ["push",2],
-                ["add",0],
-                ["duplicate",0],
-                ["out_num",0],
-                ["push",32],
-                ["out_char",0],
-                ["copy2",0],
-                ["end_while",0]
-                ]
+# test_commands = [
+#                 ["push",4],
+#                 ["push",1],
+#                 ["while",0],
+#                 ["greater",0],
+#                 ["end_cond",0],
+#                 ["push",2],
+#                 ["add",0],
+#                 ["duplicate",0],
+#                 ["out_num",0],
+#                 ["push",32],
+#                 ["out_char",0],
+#                 ["copy2",0],
+#                 ["end_while",0]
+#                 ]
 
 # test_commands = [
 #                 ["push",4],
 #                 ["push",2],
 #                 ["if",0],
-#                 ["mod",0],
-#                 ["invert",0],
-#                 ["end_cond",0],
-#                 ["print_string", "4 is divisible by 2"],
+#                         ["mod",0],
+#                         ["invert",0],
+#                     ["end_cond",0],
+#                     ["print_string", "4 is divisible by 2"],
 #                 ["end_if",0]
 #                 ]
+
+#Euclidean Algorithm
+# test_commands = [
+#                 ["push",13],
+#                 ["push",5],
+#                 ["copy2",0],
+#                 ["out_num",0],
+#                 ["push",32],
+#                 ["out_char",0],
+#                 ["out_num",0],
+#                 ["while",0],
+#                         ["duplicate",0],
+#                         ["push",0],
+#                         ["equals",0],
+#                         ["invert",0],
+#                         ["end_cond",0],
+#                     ["duplicate",0],
+#                     ["push",3],
+#                     ["push",1],
+#                     ["roll",0],
+#                     ["mod",0],
+#                     ["push",32],
+#                     ["out_char",0],
+#                     ["duplicate",0],
+#                     ["out_num",0],
+#                 ["end_while"]
+#                 ]
+
+test_commands = [
+                ["print_string","Hello World!"]
+                ]
 
 # test_commands = [['push',18],['push',2],['divide',0],['out_num',0]]
 
@@ -81,17 +112,23 @@ def command_image(command_list):
     global color
     image = np.full((0,0,3),0,dtype=int)
     # image[1][0] = colors[6][0]
-
     for i,x in enumerate(command_list):
         length = 1
         if x[0] == 'push':
             length = x[1] # height of line codel
-            #! add negative numbers
+            if length <= 0:
+                magnitude = 1-length
+                command_list.insert(i+1,["push",1])
+                command_list.insert(i+2,["push",magnitude])
+                command_list.insert(i+3,["subtract",0])
+                continue
+            else:
+                magnitude = length
             # flatten large numbers
-            if length > 16:
+            if magnitude > 16:
                 # replace with sequence
-                q = int(length / 16)
-                r = length % 16
+                q = int(magnitude / 16)
+                r = magnitude % 16
                 if q > 16:
                     raise RuntimeError('number is too big')
                 if q != 0:
@@ -104,6 +141,8 @@ def command_image(command_list):
                 else:
                     raise RuntimeError("number isn't actually too big")
                 continue
+
+            length = magnitude
         #custom functions
         elif x[0] == 'copy2':
             command_list.insert(i+1,['duplicate',0])
@@ -118,16 +157,37 @@ def command_image(command_list):
             command_list.insert(i+10,['push',1])
             command_list.insert(i+11,['roll',0])
             continue
+        elif x[0] == 'swap':
+            command_list.insert(i+1,["push",2])
+            command_list.insert(i+2,["push",1])
+            command_list.insert(i+3,["roll",0])
+            continue
         elif x[0] == 'print_string':
             if isinstance(x[1],str):
                 j=1
-                for i,s in enumerate(x[1]):
-                    command_list.insert(i+j,['push',ord(s)])
-                    command_list.insert(i+j+1,['out_char',0])
+                for k,s in enumerate(x[1]):
+                    command_list.insert(k+j,['push',ord(s)])
+                    command_list.insert(k+j+1,['out_char',0])
                     j+=2
             else:
                 print("not a string")
             continue
+        elif x[0] == 'equals':
+            command_list.insert(i+1,["copy2",0])
+            command_list.insert(i+2,["push",1])
+            command_list.insert(i+3,["subtract",0])
+            command_list.insert(i+4,["greater",0])
+            command_list.insert(i+5,["push",3])
+            command_list.insert(i+6,["push",1])
+            command_list.insert(i+7,["roll",0])
+            command_list.insert(i+8,["push",1])
+            command_list.insert(i+9,["add",0])
+            command_list.insert(i+10,["swap",0])
+            command_list.insert(i+11,["greater",0])
+            command_list.insert(i+12,["multiply",0])
+            continue
+        # elif x[0] == 'less':
+
 
 
         diff = length - image.shape[1]
@@ -144,7 +204,6 @@ def command_image(command_list):
         color_indices[0] = (color_indices[0] + commands[x[0]][1]) % 6
         color_indices[1] = (color_indices[1] + commands[x[0]][0]) % 3
         color = colors[color_indices[0]][color_indices[1]]
-
 
     y = np.full((image.shape[0]+1,max(image.shape[1],3),3),0,int)
     y[:image.shape[0],:image.shape[1]] = image
@@ -236,21 +295,38 @@ def concatenate_images(program):
 
             block_img = concatenate_images(block_program)
             block_img = extend_black(block_img,19)
-            y = np.full((block_img.shape[0]+1,block_img.shape[1],3),0,int)
-            y[1:block_img.shape[0]+1] = block_img
+            y = np.full((block_img.shape[0]+2,block_img.shape[1],3),0,int)
+            y[2:block_img.shape[0]+2] = block_img
             y[0,0] = colors[6][0]
+            y[1,0] = colors[6][0]
             block_img = y
 
             y = np.full((block_img.shape[0]+2,block_img.shape[1]+1),colors[6][0],dtype=(int,3))
             y[1:block_img.shape[0]+1,:block_img.shape[1]] = block_img
+
             block_img = y
-            block_img = numpy.rot90(block_img,3,(0,1))
-            
+            block_img = np.rot90(block_img,1,(0,1))
 
-            # if img.shape[0] < 20:
+            y = np.full((block_img.shape[0]+1,block_img.shape[1],3),0,int)
+            y[1:block_img.shape[0]+1,:block_img.shape[1]] = block_img
+            y[0][0] = colors[6][0]
+
+            block_img = y
+            y = np.full((block_img.shape[0],block_img.shape[1]+1,3),0,int)
+            y[:,:block_img.shape[1]] = block_img
+            block_img = y
+            #corners need colors
+            block_img[1,-1] = colors[6][0]
+            color1 = colors[random.randrange(6)][random.randrange(3)]
+            block_img[1,-2] = color
+            block_img[1,0] = color
+            block_img[-1,0] = color
+
+            if img.shape[0] < 21:
                 #assume img.shape[0] > 1
-                # y = np.full((20,img.shape[1]+))
-
+                y = np.full((21,img.shape[1],3),0,int)
+                y[:img.shape[0]] = img
+                img = np.concatenate((y,block_img),axis=1)
 
 
 
@@ -282,6 +358,5 @@ for i in range(img.size[0]):
     for j in range(img.size[1]):
         pixels[i,j] = tuple(image[i,j])
 
-# img.show()
 
 img.save('../test/out.png')
