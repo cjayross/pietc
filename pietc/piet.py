@@ -94,9 +94,9 @@ takes the command structure and build a list of commands
 #                 ["end_while"]
 #                 ]
 
-commands = [
-                ["print_string","Hello World!"]
-                ]
+#commands = [
+#                ["print_string","Hello World!"]
+#                ]
 
 color_indices = [random.randrange(6),random.randrange(3)]
 color = colors[color_indices[0]][color_indices[1]]
