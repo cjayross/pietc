@@ -6,6 +6,8 @@ precedence = (
         ('left', '*', '/', '%'),
         )
 
+variables = {}
+
 def p_file_inputs (p):
     '''file_inputs : file_input
                    | file_input file_inputs
@@ -83,21 +85,37 @@ def p_while_stmt (p):
 def p_block (p):
     '''block : simple_stmt
              | NEWLINE INDENT stmt_chain_stmt DEDENT'''
-    pass
+    if len(p) == 2:
+        p[0] = p[1]
+    else:
+        p[0] = p[3]
 
 def p_stmt_chain_stmt (p):
     '''stmt_chain_stmt : stmt
                        | stmt stmt_chain_stmt'''
-    pass
+    p[0] = p[1]
 
 def p_assign_expr (p):
     '''assign_expr : NAME "=" value_expr'''
-    pass
+    p[0] = variables[p[1]] = p[3]
 
 def p_value_expr (p):
     '''value_expr : atom_expr
                   | atom_expr compare_op value_expr'''
-    pass
+    if len(p) == 2:
+        p[0] = p[1]
+    elif p[2] == '<':
+        p[0] = p[1] < p[3]
+    elif p[2] == '>':
+        p[0] = p[1] > p[3]
+    elif p[2] == '<=':
+        p[0] = p[1] <= p[3]
+    elif p[2] == '>=':
+        p[0] = p[1] >= p[3]
+    elif p[2] == '==':
+        p[0] = p[1] == p[3]
+    else:
+        p[0] = p[1] != p[3]
 
 def p_compare_op (p):
     '''compare_op : "<"
@@ -106,31 +124,55 @@ def p_compare_op (p):
                   | GREATEROREQUAL
                   | EQUALS
                   | NOTEQUALS'''
-    pass
+    p[0] = p[1]
 
 def p_atom_expr (p):
     '''atom_expr : term
                  | term "+" atom_expr
                  | term "-" atom_expr'''
+    if len(p) == 2:
+        p[0] = p[1]
+    elif p[2] == '+':
+        p[0] = p[1] + p[3]
+    else:
+        p[0] = p[1] - p[3]
 
 def p_term (p):
     '''term : factor
             | factor "*" term
             | factor "/" term
             | factor "%" term'''
-    pass
+    if len(p) == 2:
+        p[0] = p[1]
+    elif p[2] == '*':
+        p[0] = p[1] * p[3]
+    elif p[2] == '/':
+        p[0] = p[1] / p[3]
+    else:
+        p[0] = p[1] % p[3]
 
 def p_factor (p):
     '''factor : atom
               | "(" atom_expr ")"'''
-    pass
+    if len(p) == 2:
+        p[0] = p[1]
+    else:
+        p[0] = p[2]
 
 def p_atom (p):
     '''atom : INTEGER
             | NAME
             | TRUE
             | FALSE'''
-    pass
+    if p[1] == 'True':
+        p[0] = 1
+    elif p[1] == 'False':
+        p[0] = 0
+    else:
+        try:
+            p[0] = int(p[1])
+        except ValueError:
+            p[0] = variables.get(p[1], None)
 
 def p_error (p):
     raise Exception("Syntax error: %s" % p.value)

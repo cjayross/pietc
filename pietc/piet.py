@@ -40,12 +40,12 @@ command structure:
 takes the command structure and build a list of commands
 """
 
-# test_commands = [["push",2],
+# commands = [["push",2],
 #                 ["out_num",0],
 #                 ["push",10],
 #                 ["out_char",0]]
 
-# test_commands = [
+# commands = [
 #                 ["push",4],
 #                 ["push",1],
 #                 ["while",0],
@@ -61,7 +61,7 @@ takes the command structure and build a list of commands
 #                 ["end_while",0]
 #                 ]
 
-# test_commands = [
+# commands = [
 #                 ["push",4],
 #                 ["push",2],
 #                 ["if",0],
@@ -73,7 +73,7 @@ takes the command structure and build a list of commands
 #                 ]
 
 #Euclidean Algorithm
-# test_commands = [
+# commands = [
 #                 ["push",13],
 #                 ["push",5],
 #                 ["copy2",0],
@@ -99,11 +99,11 @@ takes the command structure and build a list of commands
 #                 ["end_while"]
 #                 ]
 
-test_commands = [
+commands = [
                 ["print_string","Hello World!"]
                 ]
 
-# test_commands = [['push',18],['push',2],['divide',0],['out_num',0]]
+# commands = [['push',18],['push',2],['divide',0],['out_num',0]]
 
 color_indices = [random.randrange(6),random.randrange(3)]
 color = colors[color_indices[0]][color_indices[1]]
@@ -340,7 +340,7 @@ def concatenate_images(program):
 
 
 
-image = concatenate_images(test_commands)
+image = concatenate_images(commands)
 
 y = np.full((image.shape[0]+4,max(image.shape[1],3),3),0,int)
 y[:image.shape[0],:image.shape[1]] = image

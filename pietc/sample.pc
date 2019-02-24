@@ -1,5 +1,2 @@
-x = 0 # hello world
-# blah blah
-
-while x < 10:
-  x = x + 1
+x = 0 # this is a comment
+x = x + 10
