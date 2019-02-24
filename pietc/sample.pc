@@ -1,2 +1,2 @@
-x = 0 # this is a comment
-x = x + 10
+x = "We did it!"
+print char x
