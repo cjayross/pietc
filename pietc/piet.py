@@ -94,9 +94,15 @@ takes the command structure and build a list of commands
 #                 ["end_while"]
 #                 ]
 
-commands = [
-                ["print_string","Hello World!"]
-                ]
+# commands = [
+#                 ["print_string","Hello World!"]
+#                 ]
+
+commands = [ ["push", 3],
+            ["push",2],
+            ["less",0],
+            ["out_num",0]
+]
 
 color_indices = [random.randrange(6),random.randrange(3)]
 color = colors[color_indices[0]][color_indices[1]]
@@ -179,7 +185,16 @@ def command_image(command_list):
             command_list.insert(i+11,["greater",0])
             command_list.insert(i+12,["multiply",0])
             continue
-        # elif x[0] == 'less':
+        elif x[0] == 'less':
+            command_list.insert(i+1,["copy2",0])
+            command_list.insert(i+2,["swap",0])
+            command_list.insert(i+3,["greater",0])
+            command_list.insert(i+4,["push",3])
+            command_list.insert(i+5,["push",1])
+            command_list.insert(i+6,["roll",0])
+            command_list.insert(i+7,["pop",0])
+            command_list.insert(i+7,["pop",0])
+            continue
 
 
 
