@@ -48,6 +48,9 @@ literals = (
         '(',
         ')',
         '#',
+        "'",
+        '"',
+        ' ',
         )
 
 reserved = {
@@ -71,7 +74,7 @@ def t_error (tok):
     print("Illegal character encountered: '%s'" % tok.value[0])
     tok.lexer.skip(1)
 
-def t_COMMENT (tok):
+def t_ignore_COMMENT (tok):
     r"\#.*\n"
     tok.lexer.lineno += 1
     tok.value = len(tok.value) - tok.value.rfind('\n') - 1
@@ -90,7 +93,7 @@ def t_NAME (tok):
     return tok
 
 def t_STRING (tok):
-    r"\".*\""
+    r"(\".*\"|\'.*\')"
     tok.value = tok.value[1:-1]
     return tok
 

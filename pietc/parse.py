@@ -86,7 +86,7 @@ def p_while_stmt (p):
 
 def p_block (p):
     '''block : simple_stmt
-             | NEWLINE INDENT stmt_chain_stmt DEDENT'''
+             | INDENT stmt_chain_stmt DEDENT'''
     if len(p) == 2:
         p[0] = p[1]
     else:
