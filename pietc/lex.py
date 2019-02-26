@@ -1,6 +1,12 @@
 from ply import lex
 from collections import namedtuple, deque
 
+class IndentToken (lex.LexToken):
+    def __init__ (self, _type, _value, _lineno, _lexpos):
+        self.type = _type
+        self.value = _value
+        self.lineno = _lineno
+        self.lexpos = _lexpos
 
 tokens = (
         'NAME',
@@ -126,16 +132,25 @@ class IndentLexer (object):
             if len(self.depth_stack) > 1:
                 tok = IndentToken('DEDENT', None)
                 for _ in range(len(self.depth_stack)-1):
-                    self.token_queue.append(IndentToken('DEDENT', None))
+                    new = IndentToken(
+                            'DEDENT', None,
+                            self.lexer.lineno, self.lexer.lexpos)
+                    self.token_queue.append(new)
                 self.depth_stack = [0]
         elif tok.type == 'NEWLINE':
             if tok.value > self.depth_stack[-1]:
                 self.depth_stack.append(tok.value)
-                self.token_queue.append(IndentToken('INDENT', None))
+                new = IndentToken(
+                        'INDENT', None,
+                        self.lexer.lineno, self.lexer.lexpos)
+                self.token_queue.append(new)
             else:
                 while tok.value < self.depth_stack[-1]:
                     self.depth_stack.pop()
-                    self.token_queue.append(IndentToken('DEDENT', None))
+                    new = IndentToken(
+                            'DEDENT', None,
+                            self.lexer.lineno, self.lexer.lexpos)
+                    self.token_queue.append(new)
                 if tok.value != self.depth_stack[-1]:
                     raise Exception("Indentation mismatch")
         return tok
@@ -145,7 +160,7 @@ class IndentLexer (object):
         while True:
             tok = self.token()
             if not tok: break
-            #print(tok.type)
+            print(tok)
 
 lexer = IndentLexer(lex.lex())
 lexer.run('sample.pc')
