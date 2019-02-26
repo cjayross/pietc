@@ -1,5 +1,5 @@
 from ply import lex
-from collections import namedtuple, deque
+from collections import deque
 
 class IndentToken (lex.LexToken):
     def __init__ (self, _type, _value, _lineno, _lexpos):
@@ -68,21 +68,25 @@ reserved = {
         'False' : 'FALSE',
         }
 
-t_ignore = " \t"
+# t_ignore = " \t"
 
 def t_error (tok):
     print("Illegal character encountered: '%s'" % tok.value[0])
     tok.lexer.skip(1)
 
 def t_ignore_COMMENT (tok):
-    r"\#.*\n"
-    tok.lexer.lineno += 1
+    r"(?:\#.*\n)+\s*"
+    tok.lexer.lineno += tok.value.count('\n')
     tok.value = len(tok.value) - tok.value.rfind('\n') - 1
     tok.type = 'NEWLINE'
     return tok
 
+def t_ignore_WORDSEPERATION (tok):
+    r"(?<=[^ \t\n])[ \t]+"
+    pass
+
 def t_NEWLINE (tok):
-    r"\n(?:\s*(?:[#].*)?\n)*\s*"
+    r"\n(?:\s*(?:\#.*)?\n)*\s*"
     tok.lexer.lineno += tok.value.count('\n')
     tok.value = len(tok.value) - tok.value.rfind('\n') - 1
     return tok
@@ -133,11 +137,15 @@ class IndentLexer (object):
         if not tok:
             self.eof = True
             if len(self.depth_stack) > 1:
-                tok = IndentToken('DEDENT', None)
+                tok = IndentToken(
+                        'DEDENT', None,
+                        # self.lexer.lineno, self.lexer.lexpos)
+                        self.lexer.lineno, -100)
                 for _ in range(len(self.depth_stack)-1):
                     new = IndentToken(
                             'DEDENT', None,
-                            self.lexer.lineno, self.lexer.lexpos)
+                            # self.lexer.lineno, self.lexer.lexpos)
+                            self.lexer.lineno, -100)
                     self.token_queue.append(new)
                 self.depth_stack = [0]
         elif tok.type == 'NEWLINE':
@@ -145,14 +153,16 @@ class IndentLexer (object):
                 self.depth_stack.append(tok.value)
                 new = IndentToken(
                         'INDENT', None,
-                        self.lexer.lineno, self.lexer.lexpos)
+                        # self.lexer.lineno, self.lexer.lexpos)
+                        self.lexer.lineno, -100)
                 self.token_queue.append(new)
             else:
                 while tok.value < self.depth_stack[-1]:
                     self.depth_stack.pop()
                     new = IndentToken(
                             'DEDENT', None,
-                            self.lexer.lineno, self.lexer.lexpos)
+                            # self.lexer.lineno, self.lexer.lexpos)
+                            self.lexer.lineno, -100)
                     self.token_queue.append(new)
                 if tok.value != self.depth_stack[-1]:
                     raise Exception("Indentation mismatch")
