@@ -1,14 +1,13 @@
-from pietc.parse import *
 import numpy as np
 import random
 import itertools
 from PIL import Image
 
 # list of value, command
-__all__ = ['funcs', 'colors']
+__all__ = ['commands', 'colors']
 
 # darkness, hue
-funcs = {'push':(1,0), 'pop':(2,0),
+commands = {'push':(1,0), 'pop':(2,0),
             'add':(0,1), 'subtract':(1,1), 'multiply':(2,1),
             'divide':(0,2), 'mod':(1,2), 'invert':(2,2),
             'greater':(0,3),'pointer':(1,3),'switch':(2,3),
@@ -41,12 +40,12 @@ command structure:
 takes the command structure and build a list of commands
 """
 
-# commands = [["push",2],
+# test_commands = [["push",2],
 #                 ["out_num",0],
 #                 ["push",10],
 #                 ["out_char",0]]
 
-# commands = [
+# test_commands = [
 #                 ["push",4],
 #                 ["push",1],
 #                 ["while",0],
@@ -62,48 +61,49 @@ takes the command structure and build a list of commands
 #                 ["end_while",0]
 #                 ]
 
-# commands = [
-#                 ["push",4],
-#                 ["push",2],
-#                 ["if",0],
-#                         ["mod",0],
-#                         ["invert",0],
-#                     ["end_cond",0],
-#                     ["print_string", "4 is divisible by 2"],
-#                 ["end_if",0]
+# test_commands = [["push",1],
+#                  ["while",0],
+#                      ["duplicate",0],
+#                      ["push",6],
+#                      ["greater",0],
+#                      ["invert",0],
+#                      ["end_cond",0],
+#                     ["if",0],
+#                     []
 #                 ]
 
 #Euclidean Algorithm
-# commands = [
-#                 ["push",13],
-#                 ["push",5],
-#                 ["copy2",0],
-#                 ["out_num",0],
-#                 ["push",32],
-#                 ["out_char",0],
-#                 ["out_num",0],
-#                 ["while",0],
-#                         ["duplicate",0],
-#                         ["push",2],
-#                         ["greater",0],
-#                         ["end_cond",0],
-#                         ["duplicate",0],
-#                         ["out_num",0],
-#                         ["push",32],
-#                         ["out_char",0],
-#                     ["end_if"],
-#                 ["end_while"]
-#                 ]
+test_commands = [
+                ["push",13],
+                ["push",5],
+                ["copy2",0],
+                ["out_num",0],
+                ["push",32],
+                ["out_char",0],
+                ["out_num",0],
+                ["while",0],
+                        ["duplicate",0],
+                        ["push",0],
+                        ["equals",0],
+                        ["invert",0],
+                        ["end_cond",0],
+                    ["duplicate",0],
+                    ["push",3],
+                    ["push",1],
+                    ["roll",0],
+                    ["mod",0],
+                    ["push",32],
+                    ["out_char",0],
+                    ["duplicate",0],
+                    ["out_num",0],
+                ["end_while"]
+                ]
 
-# commands = [
+# test_commands = [
 #                 ["print_string","Hello World!"]
 #                 ]
 
-# commands = [ ["push", 3],
-#             ["push",2],
-#             ["less",0],
-#             ["out_num",0]
-# ]
+# test_commands = [['push',18],['push',2],['divide',0],['out_num',0]]
 
 color_indices = [random.randrange(6),random.randrange(3)]
 color = colors[color_indices[0]][color_indices[1]]
@@ -186,16 +186,7 @@ def command_image(command_list):
             command_list.insert(i+11,["greater",0])
             command_list.insert(i+12,["multiply",0])
             continue
-        elif x[0] == 'less':
-            command_list.insert(i+1,["copy2",0])
-            command_list.insert(i+2,["swap",0])
-            command_list.insert(i+3,["greater",0])
-            command_list.insert(i+4,["push",3])
-            command_list.insert(i+5,["push",1])
-            command_list.insert(i+6,["roll",0])
-            command_list.insert(i+7,["pop",0])
-            command_list.insert(i+7,["pop",0])
-            continue
+        # elif x[0] == 'less':
 
 
 
@@ -210,8 +201,8 @@ def command_image(command_list):
         z[:image.shape[0],:image.shape[1]] = image
         image = z
 
-        color_indices[0] = (color_indices[0] + funcs[x[0]][1]) % 6
-        color_indices[1] = (color_indices[1] + funcs[x[0]][0]) % 3
+        color_indices[0] = (color_indices[0] + commands[x[0]][1]) % 6
+        color_indices[1] = (color_indices[1] + commands[x[0]][0]) % 3
         color = colors[color_indices[0]][color_indices[1]]
 
     y = np.full((image.shape[0]+1,max(image.shape[1],3),3),0,int)
@@ -265,8 +256,8 @@ def concatenate_images(program):
             while_img = y
 
             #create branch
-            color_indices[0] = (color_indices[0] + funcs["pointer"][1]) % 6
-            color_indices[1] = (color_indices[1] + funcs["pointer"][0]) % 3
+            color_indices[0] = (color_indices[0] + commands["pointer"][1]) % 6
+            color_indices[1] = (color_indices[1] + commands["pointer"][0]) % 3
             color = colors[color_indices[0]][color_indices[1]]
 
             while_img[-1,0] = color
@@ -294,8 +285,8 @@ def concatenate_images(program):
             img = np.concatenate((img,img1),axis=0)
 
             #create branch
-            color_indices[0] = (color_indices[0] + funcs["pointer"][1]) % 6
-            color_indices[1] = (color_indices[1] + funcs["pointer"][0]) % 3
+            color_indices[0] = (color_indices[0] + commands["pointer"][1]) % 6
+            color_indices[1] = (color_indices[1] + commands["pointer"][0]) % 3
             color = colors[color_indices[0]][color_indices[1]]
 
             n = img.shape[0]
@@ -358,7 +349,7 @@ def concatenate_images(program):
             for i in range(n+1,img.shape[0]):
                 img[i][0] = colors[6][0]
 
-            # print(img.shape)
+            print(img.shape)
             img[n,m] = color
             # img[n,m-1] = color
             
@@ -386,7 +377,7 @@ def concatenate_images(program):
 
 
 
-image = concatenate_images(commands)
+image = concatenate_images(test_commands)
 
 y = np.full((image.shape[0]+4,max(image.shape[1],3),3),0,int)
 y[:image.shape[0],:image.shape[1]] = image
