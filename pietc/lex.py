@@ -1,7 +1,6 @@
 from ply import lex
 from collections import namedtuple, deque
 
-IndentToken = namedtuple('Token', 'type value')
 
 tokens = (
         'NAME',
@@ -26,7 +25,6 @@ tokens = (
         'LESSEROREQUAL',
         'TRUE',
         'FALSE',
-        'COMMENT',
         )
 
 literals = (
@@ -87,6 +85,7 @@ def t_NAME (tok):
 
 def t_STRING (tok):
     r"\".*\""
+    tok.value = tok.value[1:-1]
     return tok
 
 def t_INTEGER (tok):

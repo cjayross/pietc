@@ -55,7 +55,7 @@ def p_print_stmt (p):
                   | PRINT INT NAME
                   | PRINT INT INTEGER
                   | PRINT INT STRING'''
-    commands.append(["print_string", p[3]])
+    pass
 
 def p_scan_stmt (p):
     '''scan_stmt : SCAN CHAR NAME
@@ -97,9 +97,9 @@ def p_stmt_chain_stmt (p):
     p[0] = p[1]
 
 def p_assign_expr (p):
-    '''assign_expr : NAME "=" value_expr'''
+    '''assign_expr : NAME "=" value_expr
+                   | NAME "=" STRING'''
     p[0] = variables[p[1]] = p[3]
-    commands.append(["push", p[3]])
 
 def p_value_expr (p):
     '''value_expr : atom_expr
@@ -108,23 +108,14 @@ def p_value_expr (p):
         p[0] = p[1]
     elif p[2] == '<':
         p[0] = p[1] < p[3]
-        commands.append(["push", p[1]])
-        commands.append(["push", p[3]])
-        commands.append(["greater", 0])
     elif p[2] == '>':
         p[0] = p[1] > p[3]
-        commands.append(["push", p[1]])
-        commands.append(["push", p[3]])
-        commands.append(["less", 0])
     elif p[2] == '<=':
         p[0] = p[1] <= p[3]
     elif p[2] == '>=':
         p[0] = p[1] >= p[3]
     elif p[2] == '==':
         p[0] = p[1] == p[3]
-        commands.append(["push", p[1]])
-        commands.append(["push", p[3]])
-        commands.append(["equals", 0])
     else:
         p[0] = p[1] != p[3]
 
@@ -173,7 +164,6 @@ def p_factor (p):
 def p_atom (p):
     '''atom : INTEGER
             | NAME
-            | STRING
             | TRUE
             | FALSE'''
     if p[1] == 'True':
