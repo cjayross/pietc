@@ -1,5 +1,6 @@
 from ply import yacc
 from pietc.lex import tokens
+import logging
 
 precedence = (
         ('left', '+', '-'),
@@ -179,5 +180,12 @@ def p_atom (p):
 def p_error (p):
     raise Exception("Syntax error: %s" % p.value)
 
+logging.basicConfig(
+        level = logging.DEBUG,
+        filename = 'parse.log',
+        filemode = 'w',
+        format = '%(filename)7s:%(lineno)4d:%(message)s'
+        )
+log = logging.getLogger()
 yacc.yacc()
-yacc.parse(open('sample.pc').read())
+yacc.parse(open('sample.pc').read(), debug=log)
