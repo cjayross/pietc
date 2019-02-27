@@ -134,35 +134,25 @@ class IndentLexer (object):
         if self.eof:
             return None
         tok = self.lexer.token()
+        lineno = self.lexer.lineno
+        lexpos = self.lexer.lexpos
         if not tok:
             self.eof = True
             if len(self.depth_stack) > 1:
-                tok = IndentToken(
-                        'DEDENT', None,
-                        # self.lexer.lineno, self.lexer.lexpos)
-                        self.lexer.lineno, -100)
+                tok = IndentToken('DEDENT', None, lineno, lexpos)
                 for _ in range(len(self.depth_stack)-1):
-                    new = IndentToken(
-                            'DEDENT', None,
-                            # self.lexer.lineno, self.lexer.lexpos)
-                            self.lexer.lineno, -100)
+                    new = IndentToken('DEDENT', None, lineno, lexpos)
                     self.token_queue.append(new)
                 self.depth_stack = [0]
         elif tok.type == 'NEWLINE':
             if tok.value > self.depth_stack[-1]:
                 self.depth_stack.append(tok.value)
-                new = IndentToken(
-                        'INDENT', None,
-                        # self.lexer.lineno, self.lexer.lexpos)
-                        self.lexer.lineno, -100)
+                new = IndentToken('INDENT', None, lineno, lexpos)
                 self.token_queue.append(new)
             else:
                 while tok.value < self.depth_stack[-1]:
                     self.depth_stack.pop()
-                    new = IndentToken(
-                            'DEDENT', None,
-                            # self.lexer.lineno, self.lexer.lexpos)
-                            self.lexer.lineno, -100)
+                    new = IndentToken('DEDENT', None, lineno, lexpos)
                     self.token_queue.append(new)
                 if tok.value != self.depth_stack[-1]:
                     raise Exception("Indentation mismatch")
