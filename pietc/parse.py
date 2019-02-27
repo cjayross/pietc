@@ -1,5 +1,5 @@
 from ply import yacc
-from pietc.lex import tokens
+from pietc.lex import *
 import logging
 
 precedence = (
@@ -187,5 +187,7 @@ logging.basicConfig(
         format = '%(filename)7s:%(lineno)4d:%(message)s'
         )
 log = logging.getLogger()
+lexer = IndentLexer(lex.lex(), True)
+lexer.input(open('sample.pc', 'r').read())
 yacc.yacc()
-yacc.parse(open('sample.pc').read(), debug=log)
+yacc.parse(lexer=lexer, debug=log)
