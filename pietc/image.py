@@ -150,22 +150,24 @@ class Context (object):
         self.is_main = (self.index is 0)
         self.tracks = 0
         self.codels = []
-        self._size = CODELLEN
 
     @property
     def shape (self):
+        size = CODELLEN + BUSWIDTH*self.tracks
         if self.is_main:
-            return (len(self.codels), self._size)
+            return (len(self.codels), size)
         else:
-            return (self._size, len(self.codels))
+            return (size, len(self.codels))
 
     def append (self, codel):
         self.codels.append(codel)
 
     def add_track (self):
         self.tracks += 1
-        self._size += BUSWIDTH
         return self.tracks
+
+    def draw (self):
+        pass
 
 def shift_color (command, color=CURRENT_COLOR):
     idx = tuple(map(np.mod, COLORIDXS[color]+command.shift, COLORSHAPE))
