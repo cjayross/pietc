@@ -7,8 +7,7 @@ precedence = (
         ('left', '*', '/', '%'),
         )
 
-variables = {}
-commands = []
+VARIABLES = {}
 
 def p_file_inputs (p):
     '''file_inputs : file_input
@@ -87,20 +86,17 @@ def p_while_stmt (p):
 def p_block (p):
     '''block : simple_stmt
              | NEWLINE INDENT stmt_chain_stmt DEDENT'''
-    if len(p) == 2:
-        p[0] = p[1]
-    else:
-        p[0] = p[3]
+    pass
 
 def p_stmt_chain_stmt (p):
     '''stmt_chain_stmt : stmt
                        | stmt stmt_chain_stmt'''
-    p[0] = p[1]
+    pass
 
 def p_assign_expr (p):
     '''assign_expr : NAME "=" value_expr
                    | NAME "=" STRING'''
-    p[0] = variables[p[1]] = p[3]
+    p[0] = VARIABLES[p[1]] = p[3]
 
 def p_value_expr (p):
     '''value_expr : atom_expr
@@ -175,19 +171,21 @@ def p_atom (p):
         try:
             p[0] = int(p[1])
         except ValueError:
-            p[0] = variables.get(p[1], None)
+            p[0] = VARIABLES.get(p[1], None)
 
 def p_error (p):
     raise Exception("Syntax error: %s" % p.value)
 
-logging.basicConfig(
-        level = logging.DEBUG,
-        filename = 'parse.log',
-        filemode = 'w',
-        format = '%(filename)7s:%(lineno)4d:%(message)s'
-        )
-log = logging.getLogger()
-lexer = IndentLexer(lex.lex(), True)
-lexer.input(open('sample.pc', 'r').read())
 yacc.yacc()
-yacc.parse(lexer=lexer, debug=log)
+
+if __name__ == '__main__':
+    logging.basicConfig(
+            level = logging.DEBUG,
+            filename = 'parse.log',
+            filemode = 'w',
+            format = '%(filename)7s:%(lineno)4d:%(message)s'
+            )
+    log = logging.getLogger()
+    lexer = IndentLexer(lex.lex(), True)
+    lexer.input(open('sample.pc', 'r').read())
+    yacc.parse(lexer=lexer, debug=log)
