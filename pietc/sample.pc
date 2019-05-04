@@ -1,5 +1,0 @@
-x = 10 # this is a comment
-y = 'Hello World!'
-while x > 0:
-  x = x - 1
-print int x
