@@ -1,27 +1,24 @@
 from ply.lex import lex
 
 tokens = (
-        'LPAREN',
-        'RPAREN',
-        'SYMBOL',
-        'INTEGER',
-        'BOOL',
-        'FLOAT',
-        'CHAR',
-        'STRING',
-        'QUOTE',
-        'QUASIQUOTE',
-        'UNQUOTE',
-        'UNQUOTESPLICE',
-        )
+    'LPAREN',
+    'RPAREN',
+    'SYMBOL',
+    'INTEGER',
+    'BOOL',
+    'FLOAT',
+    'CHAR',
+    'STRING',
+    'NIL',
+    'QUOTE',
+    'UNQUOTE',
+)
 
 t_LPAREN = r'\('
 t_RPAREN = r'\)'
 t_SYMBOL = r'[a-zA-Z!$%&*+./:<=>?"@^_~-][0-9a-zA-Z!$%&*+./:<=>?"@^_~-]*'
 t_QUOTE = r"'"
-t_QUASIQUOTE = r'`'
 t_UNQUOTE = r','
-t_UNQUOTESPLICE = r',@'
 
 def t_STRING (tok):
     r'"(\\"|\\n|[a-zA-Z*+/!?=<>. -])*"'
@@ -51,6 +48,10 @@ def t_CHAR (tok):
     if len(tok.value) > 1:
         tok.value = ' ' if tok.value == 'space' else '\n'
     return tok
+
+def t_NIL (tok):
+    r'nil'
+    return None
 
 t_ignore_COMMENT = r';[^\n]*'
 t_ignore = ' \t\n'
