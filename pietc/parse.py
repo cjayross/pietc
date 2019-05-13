@@ -1,5 +1,6 @@
 import math
 import operator as op
+from functools import partial
 from ply.yacc import yacc
 from pietc.lex import tokens, lexer
 
@@ -12,13 +13,14 @@ def p_sexpression_list (p):
         p[0] = [p[1],]
 
 def p_sexpression (p):
-    '''sexpression : LPAREN sexpression_list RPAREN
+    '''sexpression : QUOTE LPAREN sexpression_list RPAREN
+                   | LPAREN sexpression_list RPAREN
                    | atom'''
-    if len(p) == 4:
-        # type : list
+    if len(p) == 5:
+        p[0] = ['quote', p[3]]
+    elif len(p) == 4:
         p[0] = p[2]
     else:
-        # type : (str, int, float, None)
         p[0] = p[1]
 
 def p_atom (p):
@@ -26,14 +28,9 @@ def p_atom (p):
             | INTEGER
             | BOOL
             | FLOAT
-            | STRING
             | CHAR
+            | STRING
             | NIL'''
     p[0] = p[1]
 
 parser = yacc()
-
-if __name__ == '__main__':
-    with open('test.pl') as File:
-        res = parser.parse(File.read())
-        print(res)

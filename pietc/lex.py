@@ -22,7 +22,6 @@ t_UNQUOTE = r','
 
 def t_STRING (tok):
     r'"(\\"|\\n|[a-zA-Z*+/!?=<>. -])*"'
-    tok.value = tok.value[1:-1]
     tok.value = tok.value.replace('\\"', '"')
     tok.value = tok.value.replace('\\n', '\n')
     return tok

@@ -6,9 +6,9 @@ _tabversion = '3.10'
 
 _lr_method = 'LALR'
 
-_lr_signature = 'BOOL CHAR FLOAT INTEGER LPAREN NIL QUOTE RPAREN STRING SYMBOL UNQUOTEsexpression_list : sexpression_list sexpression\n                        | sexpressionsexpression : LPAREN sexpression_list RPAREN\n                   | atomatom : SYMBOL\n            | INTEGER\n            | BOOL\n            | FLOAT\n            | STRING\n            | CHAR\n            | NIL'
+_lr_signature = 'BOOL CHAR FLOAT INTEGER LPAREN NIL QUOTE RPAREN STRING SYMBOL UNQUOTEsexpression_list : sexpression_list sexpression\n                        | sexpressionsexpression : QUOTE LPAREN sexpression_list RPAREN\n                   | LPAREN sexpression_list RPAREN\n                   | atomatom : SYMBOL\n            | INTEGER\n            | BOOL\n            | FLOAT\n            | CHAR\n            | STRING\n            | NIL'
     
-_lr_action_items = {'LPAREN':([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,],[3,3,-2,3,-4,-5,-6,-7,-8,-9,-10,-11,-1,3,-3,]),'SYMBOL':([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,],[5,5,-2,5,-4,-5,-6,-7,-8,-9,-10,-11,-1,5,-3,]),'INTEGER':([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,],[6,6,-2,6,-4,-5,-6,-7,-8,-9,-10,-11,-1,6,-3,]),'BOOL':([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,],[7,7,-2,7,-4,-5,-6,-7,-8,-9,-10,-11,-1,7,-3,]),'FLOAT':([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,],[8,8,-2,8,-4,-5,-6,-7,-8,-9,-10,-11,-1,8,-3,]),'STRING':([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,],[9,9,-2,9,-4,-5,-6,-7,-8,-9,-10,-11,-1,9,-3,]),'CHAR':([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,],[10,10,-2,10,-4,-5,-6,-7,-8,-9,-10,-11,-1,10,-3,]),'NIL':([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,],[11,11,-2,11,-4,-5,-6,-7,-8,-9,-10,-11,-1,11,-3,]),'$end':([1,2,4,5,6,7,8,9,10,11,12,14,],[0,-2,-4,-5,-6,-7,-8,-9,-10,-11,-1,-3,]),'RPAREN':([2,4,5,6,7,8,9,10,11,12,13,14,],[-2,-4,-5,-6,-7,-8,-9,-10,-11,-1,14,-3,]),}
+_lr_action_items = {'QUOTE':([0,1,2,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,],[3,3,-2,3,-5,-6,-7,-8,-9,-10,-11,-12,-1,3,3,3,-4,-3,]),'LPAREN':([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,],[4,4,-2,14,4,-5,-6,-7,-8,-9,-10,-11,-12,-1,4,4,4,-4,-3,]),'SYMBOL':([0,1,2,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,],[6,6,-2,6,-5,-6,-7,-8,-9,-10,-11,-12,-1,6,6,6,-4,-3,]),'INTEGER':([0,1,2,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,],[7,7,-2,7,-5,-6,-7,-8,-9,-10,-11,-12,-1,7,7,7,-4,-3,]),'BOOL':([0,1,2,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,],[8,8,-2,8,-5,-6,-7,-8,-9,-10,-11,-12,-1,8,8,8,-4,-3,]),'FLOAT':([0,1,2,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,],[9,9,-2,9,-5,-6,-7,-8,-9,-10,-11,-12,-1,9,9,9,-4,-3,]),'CHAR':([0,1,2,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,],[10,10,-2,10,-5,-6,-7,-8,-9,-10,-11,-12,-1,10,10,10,-4,-3,]),'STRING':([0,1,2,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,],[11,11,-2,11,-5,-6,-7,-8,-9,-10,-11,-12,-1,11,11,11,-4,-3,]),'NIL':([0,1,2,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,],[12,12,-2,12,-5,-6,-7,-8,-9,-10,-11,-12,-1,12,12,12,-4,-3,]),'$end':([1,2,5,6,7,8,9,10,11,12,13,17,18,],[0,-2,-5,-6,-7,-8,-9,-10,-11,-12,-1,-4,-3,]),'RPAREN':([2,5,6,7,8,9,10,11,12,13,15,16,17,18,],[-2,-5,-6,-7,-8,-9,-10,-11,-12,-1,17,18,-4,-3,]),}
 
 _lr_action = {}
 for _k, _v in _lr_action_items.items():
@@ -17,7 +17,7 @@ for _k, _v in _lr_action_items.items():
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
-_lr_goto_items = {'sexpression_list':([0,3,],[1,13,]),'sexpression':([0,1,3,13,],[2,12,2,12,]),'atom':([0,1,3,13,],[4,4,4,4,]),}
+_lr_goto_items = {'sexpression_list':([0,4,14,],[1,15,16,]),'sexpression':([0,1,4,14,15,16,],[2,13,2,2,13,13,]),'atom':([0,1,4,14,15,16,],[5,5,5,5,5,5,]),}
 
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
@@ -27,15 +27,16 @@ for _k, _v in _lr_goto_items.items():
 del _lr_goto_items
 _lr_productions = [
   ("S' -> sexpression_list","S'",1,None,None,None),
-  ('sexpression_list -> sexpression_list sexpression','sexpression_list',2,'p_sexpression_list','parse.py',7),
-  ('sexpression_list -> sexpression','sexpression_list',1,'p_sexpression_list','parse.py',8),
-  ('sexpression -> LPAREN sexpression_list RPAREN','sexpression',3,'p_sexpression','parse.py',16),
-  ('sexpression -> atom','sexpression',1,'p_sexpression','parse.py',17),
-  ('atom -> SYMBOL','atom',1,'p_atom','parse.py',27),
-  ('atom -> INTEGER','atom',1,'p_atom','parse.py',28),
-  ('atom -> BOOL','atom',1,'p_atom','parse.py',29),
-  ('atom -> FLOAT','atom',1,'p_atom','parse.py',30),
-  ('atom -> STRING','atom',1,'p_atom','parse.py',31),
+  ('sexpression_list -> sexpression_list sexpression','sexpression_list',2,'p_sexpression_list','parse.py',8),
+  ('sexpression_list -> sexpression','sexpression_list',1,'p_sexpression_list','parse.py',9),
+  ('sexpression -> QUOTE LPAREN sexpression_list RPAREN','sexpression',4,'p_sexpression','parse.py',16),
+  ('sexpression -> LPAREN sexpression_list RPAREN','sexpression',3,'p_sexpression','parse.py',17),
+  ('sexpression -> atom','sexpression',1,'p_sexpression','parse.py',18),
+  ('atom -> SYMBOL','atom',1,'p_atom','parse.py',28),
+  ('atom -> INTEGER','atom',1,'p_atom','parse.py',29),
+  ('atom -> BOOL','atom',1,'p_atom','parse.py',30),
+  ('atom -> FLOAT','atom',1,'p_atom','parse.py',31),
   ('atom -> CHAR','atom',1,'p_atom','parse.py',32),
-  ('atom -> NIL','atom',1,'p_atom','parse.py',33),
+  ('atom -> STRING','atom',1,'p_atom','parse.py',33),
+  ('atom -> NIL','atom',1,'p_atom','parse.py',34),
 ]

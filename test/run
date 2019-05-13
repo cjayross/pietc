@@ -1,0 +1,6 @@
+#!/bin/bash
+if [ -n "$1" ]; then
+  npiet -tpic -te $1 fizzbuzz.png >/dev/null
+else
+  npiet -tpic fizzbuzz.png >/dev/null
+fi
