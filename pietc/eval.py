@@ -53,7 +53,7 @@ class Sequence (list):
 
     def expand (self):
         res = evaluate(*self.eval_args)
-        return [*list(self), res]
+        return [*list(self), res] if res is not None else list(self)
 
     def __call__ (self, seq, args):
         function = evaluate(*self.eval_args)
