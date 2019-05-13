@@ -49,6 +49,20 @@ class Push (Command):
     def __repr__ (self):
         return '{}{}'.format(self.__class__.__name__, self.args)
 
+class Operation (object):
+    def __init__ (self, optype, op):
+        self.optype = optype
+        self.op = op
+
+    def __call__ (self, seq, args):
+        return self.optype(seq, args, op=self.op)
+
+    def __repr__ (self):
+        return '{}({})'.format(self.__class__.__name__, self.op.__name__)
+
+    def __str__ (self):
+        return str(self.__repr__())
+
 def broadcast_stack_change (stack_delta):
     for seq in active_lambdas:
         seq.stack_offset += stack_delta

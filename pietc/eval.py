@@ -51,8 +51,13 @@ class Sequence (list):
         self.env = env
         self.eval_args = (self.sexpr, self.env, self)
 
+    def expand (self):
+        res = evaluate(*self.eval_args)
+        return [*list(self), res]
+
     def __call__ (self, seq, args):
         function = evaluate(*self.eval_args)
+        # print('sequence call: {}({})'.format(function, args))
         return function(seq, args)
 
     def __repr__ (self):
@@ -179,5 +184,5 @@ def evaluate (sexpr, env, seq):
             return procedure_call(lambda_proc, args, env, arg_count=2)
     # operators are functions that manipulate the sequence and calls piet commands.
     operator, *operand = map(partial(evaluate, env=env, seq=seq), tuple(sexpr))
-    # print('executing: {}({})'.format(operator, operand))
+    print('executing: {}({})'.format(operator, operand))
     return operator(seq, operand)

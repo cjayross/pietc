@@ -1,18 +1,18 @@
 import pietc.piet as piet
-from functools import partial
+Operation = piet.Operation
 
 DEFAULT_ENV = {
-    '+' : partial(piet.associative_binary_op, op=piet.add_op),
-    '-' : partial(piet.associative_binary_op, op=piet.subtract_op),
-    '*' : partial(piet.associative_binary_op, op=piet.multiply_op),
-    '/' : partial(piet.associative_binary_op, op=piet.divide_op),
-    'modulo' : partial(piet.strict_binary_op, op=piet.modulo_op),
-    'eq?' : partial(piet.strict_binary_op, op=piet.equal_op),
-    '>' : partial(piet.strict_binary_op, op=piet.greater_op),
-    '<' : partial(piet.strict_binary_op, op=piet.less_op),
-    '>=' : partial(piet.strict_binary_op, op=piet.greater_or_equal_op),
-    '<=' : partial(piet.strict_binary_op, op=piet.less_or_equal_op),
-    'not' : partial(piet.unary_op, op=piet.not_op),
-    'or' : partial(piet.associative_binary_op, op=piet.or_op),
-    'and' : partial(piet.associative_binary_op, op=piet.and_op),
+    '+' : Operation(piet.associative_binary_op, piet.add_op),
+    '-' : Operation(piet.associative_binary_op, piet.subtract_op),
+    '*' : Operation(piet.associative_binary_op, piet.multiply_op),
+    '/' : Operation(piet.associative_binary_op, piet.divide_op),
+    'modulo' : Operation(piet.strict_binary_op, piet.modulo_op),
+    'eq?' : Operation(piet.strict_binary_op, piet.equal_op),
+    '>' : Operation(piet.strict_binary_op, piet.greater_op),
+    '<' : Operation(piet.strict_binary_op, piet.less_op),
+    '>=' : Operation(piet.strict_binary_op, piet.greater_or_equal_op),
+    '<=' : Operation(piet.strict_binary_op, piet.less_or_equal_op),
+    'not' : Operation(piet.unary_op, piet.not_op),
+    'or' : Operation(piet.associative_binary_op, piet.or_op),
+    'and' : Operation(piet.associative_binary_op, piet.and_op),
 }

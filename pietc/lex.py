@@ -55,4 +55,8 @@ def t_NIL (tok):
 t_ignore_COMMENT = r';[^\n]*'
 t_ignore = ' \t\n'
 
+def t_error (tok):
+    print('parse error: illegal character `%s`' % tok.value[0])
+    tok.lexer.skip(1)
+
 lexer = lex()
