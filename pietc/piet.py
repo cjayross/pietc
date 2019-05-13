@@ -82,13 +82,22 @@ def push_lambda_stack_op (seq, args):
 def pop_lambda_stack_op (seq):
     stack_size = len(seq.params)
     for _ in range(stack_size):
-        seq.append(Push(seq.stack_offset, -1))
-        seq.append(Command('roll'))
+        if seq.stack_offset != 0:
+            seq.append(Push(seq.stack_offset, -1))
+            seq.append(Command('roll'))
         seq.append(Command('pop'))
     if stack_size != 0:
         broadcast_stack_change(-stack_size)
 
 def push_op (seq, *args):
+    """
+    Place a set of arguments onto the top of the stack.
+
+    Normally, this is done via a simple Push command.
+    However, if the argument is a Parameter, it has already
+    been pushed to the stack, so it is instead duplicated
+    from it's current location.
+    """
     for arg in args:
         if isinstance(arg, Parameter):
             # depth = param depth + stack depth
@@ -155,7 +164,9 @@ def not_op (seq, *args):
     seq.append(Command('not'))
 
 def or_op (seq, *args):
+    # NOTE: should the result of this op be normalized?
     add_op(seq, *args)
 
 def and_op (seq, *args):
+    # NOTE: should the result of this op be normalized?
     multiply_op(seq, *args)
