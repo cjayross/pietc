@@ -9,5 +9,5 @@ with open('test.pl') as File:
     for sexpr in code:
         res = evaluate(sexpr, global_env, program)
         if issubclass(res.__class__, Sequence):
-            program.append(res.expand())
+            program.append(res)
     print(program)
