@@ -1,7 +1,7 @@
 from pietc import DEFAULT_ENV
 from pietc.parse import parser
 from pietc.eval import Environment, Sequence, LambdaSequence, evaluate
-from pietc.piet import jump_op
+from pietc.piet import Jump, jump_op
 
 with open('test.pl') as File:
     code = parser.parse(File.read())
