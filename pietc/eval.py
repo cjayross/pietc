@@ -1,5 +1,17 @@
 from functools import partial
 
+DEBUG = True
+FILTERED_PREFIXES = [
+    'evaluating',
+    # 'executing',
+    'lambda call',
+    'sequence call',
+]
+
+def debuginfo (form, *args, prefix=''):
+    if DEBUG and not prefix in FILTERED_PREFIXES:
+        print('{}: {}'.format(prefix, form.format(*args)))
+
 class Environment (dict):
     """
     Represent the program's environment within a given scope.
@@ -51,36 +63,31 @@ class Sequence (list):
         self.env = env
         self.eval_args = (self.sexpr, self.env, self)
 
-    def expand (self):
-        res = evaluate(*self.eval_args)
-        return [*list(self), res] if res is not None else list(self)
-
     def __call__ (self, seq, args):
         function = evaluate(*self.eval_args)
-        # print('sequence call: {}({})'.format(function, args))
+        debuginfo('{}({})', function, args, prefix='sequence call')
         return function(seq, args)
 
     def __repr__ (self):
         return '{}({})'.format(self.__class__.__name__, self.sexpr)
-
-    def __str__ (self):
-        return str(self.__repr__())
 
 class LambdaSequence (Sequence):
     """
     Represent a Sequence that manages a set of arguments to be
     defined within a local scope.
     """
-    def __init__ (self, lamda, parent_seq, args):
+    def __init__ (self, lamda, args):
+        from pietc.piet import Parameter
+
         self.lamda = lamda
-        self.parent_seq = parent_seq
         self.args = args
         self.params = tuple(map(partial(Parameter, lamda_seq=self),
                                 self.lamda.params))
         self.local_env = Environment(dict(zip(self.lamda.params, self.params)),
                                      parent_env=self.lamda.env)
         self.param_offset = dict(map(reversed, enumerate(self.params)))
-        self.stack_offset = 0
+        # a negative offset implies that the args have not yet been pushed.
+        self.stack_offset = -len(self.params)
         super().__init__(self.lamda.sexpr, self.local_env)
 
     def param_depth (self, param):
@@ -91,29 +98,17 @@ class LambdaSequence (Sequence):
                                    self.sexpr,
                                    list(zip(self.lamda.params, self.args)))
 
-class Parameter (object):
-    """
-    Define a lambda argument so that it can be identified across
-    separate lambda calls.
-
-    Note that the parameter's value is not stored since identifying
-    this parameter's location in the stack is sufficient.
-    """
-    def __init__ (self, symbol, lamda_seq):
-        self.lamda_seq = lamda_seq
-        self.symbol = symbol
-
-    @property
-    def param_depth (self):
-        return self.lamda_seq.param_depth(self)
-
-    def __repr__ (self):
-        return '{}({})'.format(self.__class__.__name__, self.symbol)
+class IfElseSequence (Sequence):
+    def __init__ (self, test_sexpr, if_sexpr, else_sexpr, env):
+        super().__init__(test_sexpr, env)
+        self.if_seq = Sequence(if_sexpr, env)
+        self.else_seq = Sequence(else_sexpr, env)
+        # args are stored in case the if_seq/else_seq returns a lambda.
+        self.args = None
 
     def __call__ (self, seq, args):
-        idx = self.lamda_seq.param_offset[self]
-        function = self.lamda_seq.args[idx]
-        return function(seq, args)
+        self.args = args
+        return self
 
 class Lambda (object):
     """
@@ -128,16 +123,14 @@ class Lambda (object):
     def __call__ (self, seq, args):
         if len(args) != len(self.params):
             raise RuntimeError('lambda: invalid number of parameters')
-        # print('lambda call: {}({}, {})'.format(self.__class__.__name__,
-        #                                        self.sexpr, args))
-        return LambdaSequence(self, seq, args)
+        debuginfo('{}({}, {})', self.__class__.__name__,
+                  self.sexpr, list(zip(self.params, args)),
+                  prefix='lambda call')
+        return LambdaSequence(self, args)
 
     def __repr__ (self):
         return '{}({}, {})'.format(self.__class__.__name__,
-                                   self.params, self.sexpr)
-
-    def __str__ (self):
-        return str(self.__repr__())
+                                   self.sexpr, self.params)
 
 def procedure_call (proc, args, env, arg_count=None):
     "Generic function for invoking a procedure."
@@ -155,8 +148,9 @@ def define_proc (env, *args):
     env.bind(sym, Sequence(sexpr, env))
 
 def if_proc (env, *args):
-    "TODO: Store an s-expression that can be skipped."
-    return None
+    "Store two s-expressions and a test to represent a choice."
+    test_sexpr, if_sexpr, else_sexpr = args
+    return IfElseSequence(test_sexpr, if_sexpr, else_sexpr, env)
 
 def lambda_proc (env, *args):
     "Store an s-expression as a Lambda."
@@ -165,7 +159,7 @@ def lambda_proc (env, *args):
 
 def evaluate (sexpr, env, seq):
     "Recursive function for evaluating an s-expression within a given scope."
-    # print('evaluating: {}'.format(sexpr))
+    debuginfo('{}', sexpr, prefix='evaluating')
     if not isinstance(sexpr, list):
         if isinstance(sexpr, str):
             return env.lookup(sexpr)
@@ -184,5 +178,5 @@ def evaluate (sexpr, env, seq):
             return procedure_call(lambda_proc, args, env, arg_count=2)
     # operators are functions that manipulate the sequence and calls piet commands.
     operator, *operand = map(partial(evaluate, env=env, seq=seq), tuple(sexpr))
-    print('executing: {}({})'.format(operator, operand))
+    debuginfo('{}({})', operator, operand, prefix='executing')
     return operator(seq, operand)
