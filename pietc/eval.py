@@ -3,7 +3,7 @@ from functools import partial
 DEBUG = True
 FILTERED_PREFIXES = [
     'evaluating',
-    # 'executing',
+    'executing',
     'lambda call',
     'sequence call',
 ]
@@ -77,7 +77,7 @@ class LambdaSequence (Sequence):
     defined within a local scope.
     """
     def __init__ (self, lamda, args):
-        from pietc.piet import Parameter
+        from pietc.piet import Parameter, active_lambdas
 
         self.lamda = lamda
         self.args = args
