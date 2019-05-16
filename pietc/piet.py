@@ -1,5 +1,6 @@
 import numpy as np
 from pietc.eval import Sequence, LambdaSequence, IfElseSequence
+from pietc.debug import debuginfo
 
 COMMAND_DIFFERENTIALS = {
     'push' : (0,1),
@@ -82,7 +83,7 @@ class Parameter (object):
 
     @property
     def value (self):
-        return self.lamda_seq.local_env[self]
+        return self.lamda_seq.local_env.lookup(self)
 
     def __repr__ (self):
         return '{}({})'.format(self.__class__.__name__, self.symbol)
@@ -95,6 +96,10 @@ class Parameter (object):
 def broadcast_stack_change (stack_delta):
     for seq in active_lambdas:
         seq.stack_offset += stack_delta
+        debuginfo('{} ({} -> {})',
+                  seq, seq.stack_offset-stack_delta,
+                  seq.stack_offset,
+                  prefix='broadcast')
 
 def unary_op (seq, args, op):
     if len(args) != 1:
@@ -105,7 +110,7 @@ def binary_op (seq, args, op):
     if len(args) < 2:
         raise RuntimeError('%s: insufficient number of arguments' % op.__name__)
     op(seq, *args[0:2])
-    broadcast_stack_change(1)
+    broadcast_stack_change(-1)
 
 def strict_binary_op (seq, args, op):
     if len(args) > 2:
@@ -117,27 +122,6 @@ def associative_binary_op (seq, args, op):
     for arg in args[2:]:
         op(seq, arg)
 
-def jump_op (from_seq, to_seq):
-    if isinstance(to_seq, LambdaSequence):
-        active_lambdas.append(to_seq)
-        push_op(from_seq, *to_seq.args)
-        from_seq.append(Jump(to_seq))
-    else:
-        from_seq.append(Jump(to_seq))
-
-def return_op (from_seq, to_seq):
-    jump_op(from_seq, to_seq)
-    if isinstance(from_seq, LambdaSequence):
-        active_lambdas.remove(from_seq)
-        stack_size = len(from_seq.params)
-        for _ in range(stack_size):
-            if from_seq.stack_offset != 0:
-                to_seq.append(Push(from_seq.stack_offset, -1))
-                to_seq.append(Command('roll'))
-            to_seq.append(Command('pop'))
-        if stack_size != 0:
-            broadcast_stack_change(-stack_size)
-
 def push_op (seq, *args):
     """
     Place a set of arguments onto the top of the stack.
@@ -145,8 +129,7 @@ def push_op (seq, *args):
     for arg in args:
         if isinstance(arg, (int, float)):
             seq.append(Push(arg))
-        elif issubclass(arg.__class__, Sequence):
-            jump_op(seq, arg)
+            broadcast_stack_change(1)
         elif isinstance(arg, Parameter):
             # depth = param depth + stack depth
             depth = arg.param_depth
@@ -160,9 +143,12 @@ def push_op (seq, *args):
                 seq.append(Push(depth + 1, 1))
                 seq.append(Command('roll'))
                 # param depth += 1, stack depth -= 1
+            broadcast_stack_change(1)
+        elif issubclass(arg.__class__, Sequence):
+            print('warning: sequence recieved in push operation')
         else:
             seq.append(Push(0))
-        broadcast_stack_change(1)
+            broadcast_stack_change(1)
 
 def add_op (seq, *args):
     push_op(seq, *args)

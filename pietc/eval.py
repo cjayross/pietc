@@ -1,16 +1,5 @@
 from functools import partial
-
-DEBUG = True
-FILTERED_PREFIXES = [
-    'evaluating',
-    'executing',
-    'lambda call',
-    'sequence call',
-]
-
-def debuginfo (form, *args, prefix=''):
-    if DEBUG and not prefix in FILTERED_PREFIXES:
-        print('{}: {}'.format(prefix, form.format(*args)))
+from pietc.debug import debuginfo
 
 class Environment (dict):
     """
@@ -71,13 +60,16 @@ class Sequence (list):
     def __repr__ (self):
         return '{}({})'.format(self.__class__.__name__, self.sexpr)
 
+class LambdaError (RuntimeError):
+    pass
+
 class LambdaSequence (Sequence):
     """
     Represent a Sequence that manages a set of arguments to be
     defined within a local scope.
     """
     def __init__ (self, lamda, args):
-        from pietc.piet import Parameter, active_lambdas
+        from pietc.piet import Parameter
 
         self.lamda = lamda
         self.args = args
