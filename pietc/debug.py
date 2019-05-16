@@ -1,7 +1,7 @@
 DEBUG = True
 
 FILTERED_PREFIXES = [
-    # 'broadcast',
+    'broadcast',
     'evaluating',
     'executing',
     'lambda call',
