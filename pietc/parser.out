@@ -2,6 +2,7 @@ Created by PLY version 3.11 (http://www.dabeaz.com/ply)
 
 Unused terminals:
 
+    FLOAT
     UNQUOTE
 
 Grammar
@@ -9,37 +10,37 @@ Grammar
 Rule 0     S' -> sexpression_list
 Rule 1     sexpression_list -> sexpression_list sexpression
 Rule 2     sexpression_list -> sexpression
-Rule 3     sexpression -> QUOTE LPAREN sexpression_list RPAREN
-Rule 4     sexpression -> LPAREN sexpression_list RPAREN
-Rule 5     sexpression -> atom
-Rule 6     atom -> SYMBOL
-Rule 7     atom -> INTEGER
-Rule 8     atom -> BOOL
-Rule 9     atom -> FLOAT
+Rule 3     sexpression_list -> <empty>
+Rule 4     sexpression -> QUOTE LPAREN sexpression_list RPAREN
+Rule 5     sexpression -> LPAREN sexpression_list RPAREN
+Rule 6     sexpression -> atom
+Rule 7     atom -> SYMBOL
+Rule 8     atom -> INTEGER
+Rule 9     atom -> BOOL
 Rule 10    atom -> CHAR
 Rule 11    atom -> STRING
 Rule 12    atom -> NIL
 
 Terminals, with rules where they appear
 
-BOOL                 : 8
+BOOL                 : 9
 CHAR                 : 10
-FLOAT                : 9
-INTEGER              : 7
-LPAREN               : 3 4
+FLOAT                : 
+INTEGER              : 8
+LPAREN               : 4 5
 NIL                  : 12
-QUOTE                : 3
-RPAREN               : 3 4
+QUOTE                : 4
+RPAREN               : 4 5
 STRING               : 11
-SYMBOL               : 6
+SYMBOL               : 7
 UNQUOTE              : 
 error                : 
 
 Nonterminals, with rules where they appear
 
-atom                 : 5
+atom                 : 6
 sexpression          : 1 2
-sexpression_list     : 1 3 4 0
+sexpression_list     : 1 4 5 0
 
 Parsing method: LALR
 
@@ -48,26 +49,43 @@ state 0
     (0) S' -> . sexpression_list
     (1) sexpression_list -> . sexpression_list sexpression
     (2) sexpression_list -> . sexpression
-    (3) sexpression -> . QUOTE LPAREN sexpression_list RPAREN
-    (4) sexpression -> . LPAREN sexpression_list RPAREN
-    (5) sexpression -> . atom
-    (6) atom -> . SYMBOL
-    (7) atom -> . INTEGER
-    (8) atom -> . BOOL
-    (9) atom -> . FLOAT
+    (3) sexpression_list -> .
+    (4) sexpression -> . QUOTE LPAREN sexpression_list RPAREN
+    (5) sexpression -> . LPAREN sexpression_list RPAREN
+    (6) sexpression -> . atom
+    (7) atom -> . SYMBOL
+    (8) atom -> . INTEGER
+    (9) atom -> . BOOL
     (10) atom -> . CHAR
     (11) atom -> . STRING
     (12) atom -> . NIL
 
+  ! shift/reduce conflict for QUOTE resolved as shift
+  ! shift/reduce conflict for LPAREN resolved as shift
+  ! shift/reduce conflict for SYMBOL resolved as shift
+  ! shift/reduce conflict for INTEGER resolved as shift
+  ! shift/reduce conflict for BOOL resolved as shift
+  ! shift/reduce conflict for CHAR resolved as shift
+  ! shift/reduce conflict for STRING resolved as shift
+  ! shift/reduce conflict for NIL resolved as shift
+    $end            reduce using rule 3 (sexpression_list -> .)
     QUOTE           shift and go to state 3
     LPAREN          shift and go to state 4
     SYMBOL          shift and go to state 6
     INTEGER         shift and go to state 7
     BOOL            shift and go to state 8
-    FLOAT           shift and go to state 9
-    CHAR            shift and go to state 10
-    STRING          shift and go to state 11
-    NIL             shift and go to state 12
+    CHAR            shift and go to state 9
+    STRING          shift and go to state 10
+    NIL             shift and go to state 11
+
+  ! QUOTE           [ reduce using rule 3 (sexpression_list -> .) ]
+  ! LPAREN          [ reduce using rule 3 (sexpression_list -> .) ]
+  ! SYMBOL          [ reduce using rule 3 (sexpression_list -> .) ]
+  ! INTEGER         [ reduce using rule 3 (sexpression_list -> .) ]
+  ! BOOL            [ reduce using rule 3 (sexpression_list -> .) ]
+  ! CHAR            [ reduce using rule 3 (sexpression_list -> .) ]
+  ! STRING          [ reduce using rule 3 (sexpression_list -> .) ]
+  ! NIL             [ reduce using rule 3 (sexpression_list -> .) ]
 
     sexpression_list               shift and go to state 1
     sexpression                    shift and go to state 2
@@ -77,13 +95,12 @@ state 1
 
     (0) S' -> sexpression_list .
     (1) sexpression_list -> sexpression_list . sexpression
-    (3) sexpression -> . QUOTE LPAREN sexpression_list RPAREN
-    (4) sexpression -> . LPAREN sexpression_list RPAREN
-    (5) sexpression -> . atom
-    (6) atom -> . SYMBOL
-    (7) atom -> . INTEGER
-    (8) atom -> . BOOL
-    (9) atom -> . FLOAT
+    (4) sexpression -> . QUOTE LPAREN sexpression_list RPAREN
+    (5) sexpression -> . LPAREN sexpression_list RPAREN
+    (6) sexpression -> . atom
+    (7) atom -> . SYMBOL
+    (8) atom -> . INTEGER
+    (9) atom -> . BOOL
     (10) atom -> . CHAR
     (11) atom -> . STRING
     (12) atom -> . NIL
@@ -93,12 +110,11 @@ state 1
     SYMBOL          shift and go to state 6
     INTEGER         shift and go to state 7
     BOOL            shift and go to state 8
-    FLOAT           shift and go to state 9
-    CHAR            shift and go to state 10
-    STRING          shift and go to state 11
-    NIL             shift and go to state 12
+    CHAR            shift and go to state 9
+    STRING          shift and go to state 10
+    NIL             shift and go to state 11
 
-    sexpression                    shift and go to state 13
+    sexpression                    shift and go to state 12
     atom                           shift and go to state 5
 
 state 2
@@ -110,7 +126,6 @@ state 2
     SYMBOL          reduce using rule 2 (sexpression_list -> sexpression .)
     INTEGER         reduce using rule 2 (sexpression_list -> sexpression .)
     BOOL            reduce using rule 2 (sexpression_list -> sexpression .)
-    FLOAT           reduce using rule 2 (sexpression_list -> sexpression .)
     CHAR            reduce using rule 2 (sexpression_list -> sexpression .)
     STRING          reduce using rule 2 (sexpression_list -> sexpression .)
     NIL             reduce using rule 2 (sexpression_list -> sexpression .)
@@ -120,127 +135,123 @@ state 2
 
 state 3
 
-    (3) sexpression -> QUOTE . LPAREN sexpression_list RPAREN
+    (4) sexpression -> QUOTE . LPAREN sexpression_list RPAREN
 
-    LPAREN          shift and go to state 14
+    LPAREN          shift and go to state 13
 
 
 state 4
 
-    (4) sexpression -> LPAREN . sexpression_list RPAREN
+    (5) sexpression -> LPAREN . sexpression_list RPAREN
     (1) sexpression_list -> . sexpression_list sexpression
     (2) sexpression_list -> . sexpression
-    (3) sexpression -> . QUOTE LPAREN sexpression_list RPAREN
-    (4) sexpression -> . LPAREN sexpression_list RPAREN
-    (5) sexpression -> . atom
-    (6) atom -> . SYMBOL
-    (7) atom -> . INTEGER
-    (8) atom -> . BOOL
-    (9) atom -> . FLOAT
+    (3) sexpression_list -> .
+    (4) sexpression -> . QUOTE LPAREN sexpression_list RPAREN
+    (5) sexpression -> . LPAREN sexpression_list RPAREN
+    (6) sexpression -> . atom
+    (7) atom -> . SYMBOL
+    (8) atom -> . INTEGER
+    (9) atom -> . BOOL
     (10) atom -> . CHAR
     (11) atom -> . STRING
     (12) atom -> . NIL
 
+  ! shift/reduce conflict for QUOTE resolved as shift
+  ! shift/reduce conflict for LPAREN resolved as shift
+  ! shift/reduce conflict for SYMBOL resolved as shift
+  ! shift/reduce conflict for INTEGER resolved as shift
+  ! shift/reduce conflict for BOOL resolved as shift
+  ! shift/reduce conflict for CHAR resolved as shift
+  ! shift/reduce conflict for STRING resolved as shift
+  ! shift/reduce conflict for NIL resolved as shift
+    RPAREN          reduce using rule 3 (sexpression_list -> .)
     QUOTE           shift and go to state 3
     LPAREN          shift and go to state 4
     SYMBOL          shift and go to state 6
     INTEGER         shift and go to state 7
     BOOL            shift and go to state 8
-    FLOAT           shift and go to state 9
-    CHAR            shift and go to state 10
-    STRING          shift and go to state 11
-    NIL             shift and go to state 12
+    CHAR            shift and go to state 9
+    STRING          shift and go to state 10
+    NIL             shift and go to state 11
 
-    sexpression_list               shift and go to state 15
+  ! QUOTE           [ reduce using rule 3 (sexpression_list -> .) ]
+  ! LPAREN          [ reduce using rule 3 (sexpression_list -> .) ]
+  ! SYMBOL          [ reduce using rule 3 (sexpression_list -> .) ]
+  ! INTEGER         [ reduce using rule 3 (sexpression_list -> .) ]
+  ! BOOL            [ reduce using rule 3 (sexpression_list -> .) ]
+  ! CHAR            [ reduce using rule 3 (sexpression_list -> .) ]
+  ! STRING          [ reduce using rule 3 (sexpression_list -> .) ]
+  ! NIL             [ reduce using rule 3 (sexpression_list -> .) ]
+
+    sexpression_list               shift and go to state 14
     sexpression                    shift and go to state 2
     atom                           shift and go to state 5
 
 state 5
 
-    (5) sexpression -> atom .
+    (6) sexpression -> atom .
 
-    QUOTE           reduce using rule 5 (sexpression -> atom .)
-    LPAREN          reduce using rule 5 (sexpression -> atom .)
-    SYMBOL          reduce using rule 5 (sexpression -> atom .)
-    INTEGER         reduce using rule 5 (sexpression -> atom .)
-    BOOL            reduce using rule 5 (sexpression -> atom .)
-    FLOAT           reduce using rule 5 (sexpression -> atom .)
-    CHAR            reduce using rule 5 (sexpression -> atom .)
-    STRING          reduce using rule 5 (sexpression -> atom .)
-    NIL             reduce using rule 5 (sexpression -> atom .)
-    $end            reduce using rule 5 (sexpression -> atom .)
-    RPAREN          reduce using rule 5 (sexpression -> atom .)
+    QUOTE           reduce using rule 6 (sexpression -> atom .)
+    LPAREN          reduce using rule 6 (sexpression -> atom .)
+    SYMBOL          reduce using rule 6 (sexpression -> atom .)
+    INTEGER         reduce using rule 6 (sexpression -> atom .)
+    BOOL            reduce using rule 6 (sexpression -> atom .)
+    CHAR            reduce using rule 6 (sexpression -> atom .)
+    STRING          reduce using rule 6 (sexpression -> atom .)
+    NIL             reduce using rule 6 (sexpression -> atom .)
+    $end            reduce using rule 6 (sexpression -> atom .)
+    RPAREN          reduce using rule 6 (sexpression -> atom .)
 
 
 state 6
 
-    (6) atom -> SYMBOL .
+    (7) atom -> SYMBOL .
 
-    QUOTE           reduce using rule 6 (atom -> SYMBOL .)
-    LPAREN          reduce using rule 6 (atom -> SYMBOL .)
-    SYMBOL          reduce using rule 6 (atom -> SYMBOL .)
-    INTEGER         reduce using rule 6 (atom -> SYMBOL .)
-    BOOL            reduce using rule 6 (atom -> SYMBOL .)
-    FLOAT           reduce using rule 6 (atom -> SYMBOL .)
-    CHAR            reduce using rule 6 (atom -> SYMBOL .)
-    STRING          reduce using rule 6 (atom -> SYMBOL .)
-    NIL             reduce using rule 6 (atom -> SYMBOL .)
-    $end            reduce using rule 6 (atom -> SYMBOL .)
-    RPAREN          reduce using rule 6 (atom -> SYMBOL .)
+    QUOTE           reduce using rule 7 (atom -> SYMBOL .)
+    LPAREN          reduce using rule 7 (atom -> SYMBOL .)
+    SYMBOL          reduce using rule 7 (atom -> SYMBOL .)
+    INTEGER         reduce using rule 7 (atom -> SYMBOL .)
+    BOOL            reduce using rule 7 (atom -> SYMBOL .)
+    CHAR            reduce using rule 7 (atom -> SYMBOL .)
+    STRING          reduce using rule 7 (atom -> SYMBOL .)
+    NIL             reduce using rule 7 (atom -> SYMBOL .)
+    $end            reduce using rule 7 (atom -> SYMBOL .)
+    RPAREN          reduce using rule 7 (atom -> SYMBOL .)
 
 
 state 7
 
-    (7) atom -> INTEGER .
+    (8) atom -> INTEGER .
 
-    QUOTE           reduce using rule 7 (atom -> INTEGER .)
-    LPAREN          reduce using rule 7 (atom -> INTEGER .)
-    SYMBOL          reduce using rule 7 (atom -> INTEGER .)
-    INTEGER         reduce using rule 7 (atom -> INTEGER .)
-    BOOL            reduce using rule 7 (atom -> INTEGER .)
-    FLOAT           reduce using rule 7 (atom -> INTEGER .)
-    CHAR            reduce using rule 7 (atom -> INTEGER .)
-    STRING          reduce using rule 7 (atom -> INTEGER .)
-    NIL             reduce using rule 7 (atom -> INTEGER .)
-    $end            reduce using rule 7 (atom -> INTEGER .)
-    RPAREN          reduce using rule 7 (atom -> INTEGER .)
+    QUOTE           reduce using rule 8 (atom -> INTEGER .)
+    LPAREN          reduce using rule 8 (atom -> INTEGER .)
+    SYMBOL          reduce using rule 8 (atom -> INTEGER .)
+    INTEGER         reduce using rule 8 (atom -> INTEGER .)
+    BOOL            reduce using rule 8 (atom -> INTEGER .)
+    CHAR            reduce using rule 8 (atom -> INTEGER .)
+    STRING          reduce using rule 8 (atom -> INTEGER .)
+    NIL             reduce using rule 8 (atom -> INTEGER .)
+    $end            reduce using rule 8 (atom -> INTEGER .)
+    RPAREN          reduce using rule 8 (atom -> INTEGER .)
 
 
 state 8
 
-    (8) atom -> BOOL .
+    (9) atom -> BOOL .
 
-    QUOTE           reduce using rule 8 (atom -> BOOL .)
-    LPAREN          reduce using rule 8 (atom -> BOOL .)
-    SYMBOL          reduce using rule 8 (atom -> BOOL .)
-    INTEGER         reduce using rule 8 (atom -> BOOL .)
-    BOOL            reduce using rule 8 (atom -> BOOL .)
-    FLOAT           reduce using rule 8 (atom -> BOOL .)
-    CHAR            reduce using rule 8 (atom -> BOOL .)
-    STRING          reduce using rule 8 (atom -> BOOL .)
-    NIL             reduce using rule 8 (atom -> BOOL .)
-    $end            reduce using rule 8 (atom -> BOOL .)
-    RPAREN          reduce using rule 8 (atom -> BOOL .)
+    QUOTE           reduce using rule 9 (atom -> BOOL .)
+    LPAREN          reduce using rule 9 (atom -> BOOL .)
+    SYMBOL          reduce using rule 9 (atom -> BOOL .)
+    INTEGER         reduce using rule 9 (atom -> BOOL .)
+    BOOL            reduce using rule 9 (atom -> BOOL .)
+    CHAR            reduce using rule 9 (atom -> BOOL .)
+    STRING          reduce using rule 9 (atom -> BOOL .)
+    NIL             reduce using rule 9 (atom -> BOOL .)
+    $end            reduce using rule 9 (atom -> BOOL .)
+    RPAREN          reduce using rule 9 (atom -> BOOL .)
 
 
 state 9
-
-    (9) atom -> FLOAT .
-
-    QUOTE           reduce using rule 9 (atom -> FLOAT .)
-    LPAREN          reduce using rule 9 (atom -> FLOAT .)
-    SYMBOL          reduce using rule 9 (atom -> FLOAT .)
-    INTEGER         reduce using rule 9 (atom -> FLOAT .)
-    BOOL            reduce using rule 9 (atom -> FLOAT .)
-    FLOAT           reduce using rule 9 (atom -> FLOAT .)
-    CHAR            reduce using rule 9 (atom -> FLOAT .)
-    STRING          reduce using rule 9 (atom -> FLOAT .)
-    NIL             reduce using rule 9 (atom -> FLOAT .)
-    $end            reduce using rule 9 (atom -> FLOAT .)
-    RPAREN          reduce using rule 9 (atom -> FLOAT .)
-
-
-state 10
 
     (10) atom -> CHAR .
 
@@ -249,7 +260,6 @@ state 10
     SYMBOL          reduce using rule 10 (atom -> CHAR .)
     INTEGER         reduce using rule 10 (atom -> CHAR .)
     BOOL            reduce using rule 10 (atom -> CHAR .)
-    FLOAT           reduce using rule 10 (atom -> CHAR .)
     CHAR            reduce using rule 10 (atom -> CHAR .)
     STRING          reduce using rule 10 (atom -> CHAR .)
     NIL             reduce using rule 10 (atom -> CHAR .)
@@ -257,7 +267,7 @@ state 10
     RPAREN          reduce using rule 10 (atom -> CHAR .)
 
 
-state 11
+state 10
 
     (11) atom -> STRING .
 
@@ -266,7 +276,6 @@ state 11
     SYMBOL          reduce using rule 11 (atom -> STRING .)
     INTEGER         reduce using rule 11 (atom -> STRING .)
     BOOL            reduce using rule 11 (atom -> STRING .)
-    FLOAT           reduce using rule 11 (atom -> STRING .)
     CHAR            reduce using rule 11 (atom -> STRING .)
     STRING          reduce using rule 11 (atom -> STRING .)
     NIL             reduce using rule 11 (atom -> STRING .)
@@ -274,7 +283,7 @@ state 11
     RPAREN          reduce using rule 11 (atom -> STRING .)
 
 
-state 12
+state 11
 
     (12) atom -> NIL .
 
@@ -283,7 +292,6 @@ state 12
     SYMBOL          reduce using rule 12 (atom -> NIL .)
     INTEGER         reduce using rule 12 (atom -> NIL .)
     BOOL            reduce using rule 12 (atom -> NIL .)
-    FLOAT           reduce using rule 12 (atom -> NIL .)
     CHAR            reduce using rule 12 (atom -> NIL .)
     STRING          reduce using rule 12 (atom -> NIL .)
     NIL             reduce using rule 12 (atom -> NIL .)
@@ -291,7 +299,7 @@ state 12
     RPAREN          reduce using rule 12 (atom -> NIL .)
 
 
-state 13
+state 12
 
     (1) sexpression_list -> sexpression_list sexpression .
 
@@ -300,7 +308,6 @@ state 13
     SYMBOL          reduce using rule 1 (sexpression_list -> sexpression_list sexpression .)
     INTEGER         reduce using rule 1 (sexpression_list -> sexpression_list sexpression .)
     BOOL            reduce using rule 1 (sexpression_list -> sexpression_list sexpression .)
-    FLOAT           reduce using rule 1 (sexpression_list -> sexpression_list sexpression .)
     CHAR            reduce using rule 1 (sexpression_list -> sexpression_list sexpression .)
     STRING          reduce using rule 1 (sexpression_list -> sexpression_list sexpression .)
     NIL             reduce using rule 1 (sexpression_list -> sexpression_list sexpression .)
@@ -308,47 +315,90 @@ state 13
     RPAREN          reduce using rule 1 (sexpression_list -> sexpression_list sexpression .)
 
 
-state 14
+state 13
 
-    (3) sexpression -> QUOTE LPAREN . sexpression_list RPAREN
+    (4) sexpression -> QUOTE LPAREN . sexpression_list RPAREN
     (1) sexpression_list -> . sexpression_list sexpression
     (2) sexpression_list -> . sexpression
-    (3) sexpression -> . QUOTE LPAREN sexpression_list RPAREN
-    (4) sexpression -> . LPAREN sexpression_list RPAREN
-    (5) sexpression -> . atom
-    (6) atom -> . SYMBOL
-    (7) atom -> . INTEGER
-    (8) atom -> . BOOL
-    (9) atom -> . FLOAT
+    (3) sexpression_list -> .
+    (4) sexpression -> . QUOTE LPAREN sexpression_list RPAREN
+    (5) sexpression -> . LPAREN sexpression_list RPAREN
+    (6) sexpression -> . atom
+    (7) atom -> . SYMBOL
+    (8) atom -> . INTEGER
+    (9) atom -> . BOOL
     (10) atom -> . CHAR
     (11) atom -> . STRING
     (12) atom -> . NIL
 
+  ! shift/reduce conflict for QUOTE resolved as shift
+  ! shift/reduce conflict for LPAREN resolved as shift
+  ! shift/reduce conflict for SYMBOL resolved as shift
+  ! shift/reduce conflict for INTEGER resolved as shift
+  ! shift/reduce conflict for BOOL resolved as shift
+  ! shift/reduce conflict for CHAR resolved as shift
+  ! shift/reduce conflict for STRING resolved as shift
+  ! shift/reduce conflict for NIL resolved as shift
+    RPAREN          reduce using rule 3 (sexpression_list -> .)
     QUOTE           shift and go to state 3
     LPAREN          shift and go to state 4
     SYMBOL          shift and go to state 6
     INTEGER         shift and go to state 7
     BOOL            shift and go to state 8
-    FLOAT           shift and go to state 9
-    CHAR            shift and go to state 10
-    STRING          shift and go to state 11
-    NIL             shift and go to state 12
+    CHAR            shift and go to state 9
+    STRING          shift and go to state 10
+    NIL             shift and go to state 11
 
-    sexpression_list               shift and go to state 16
+  ! QUOTE           [ reduce using rule 3 (sexpression_list -> .) ]
+  ! LPAREN          [ reduce using rule 3 (sexpression_list -> .) ]
+  ! SYMBOL          [ reduce using rule 3 (sexpression_list -> .) ]
+  ! INTEGER         [ reduce using rule 3 (sexpression_list -> .) ]
+  ! BOOL            [ reduce using rule 3 (sexpression_list -> .) ]
+  ! CHAR            [ reduce using rule 3 (sexpression_list -> .) ]
+  ! STRING          [ reduce using rule 3 (sexpression_list -> .) ]
+  ! NIL             [ reduce using rule 3 (sexpression_list -> .) ]
+
+    sexpression_list               shift and go to state 15
     sexpression                    shift and go to state 2
+    atom                           shift and go to state 5
+
+state 14
+
+    (5) sexpression -> LPAREN sexpression_list . RPAREN
+    (1) sexpression_list -> sexpression_list . sexpression
+    (4) sexpression -> . QUOTE LPAREN sexpression_list RPAREN
+    (5) sexpression -> . LPAREN sexpression_list RPAREN
+    (6) sexpression -> . atom
+    (7) atom -> . SYMBOL
+    (8) atom -> . INTEGER
+    (9) atom -> . BOOL
+    (10) atom -> . CHAR
+    (11) atom -> . STRING
+    (12) atom -> . NIL
+
+    RPAREN          shift and go to state 16
+    QUOTE           shift and go to state 3
+    LPAREN          shift and go to state 4
+    SYMBOL          shift and go to state 6
+    INTEGER         shift and go to state 7
+    BOOL            shift and go to state 8
+    CHAR            shift and go to state 9
+    STRING          shift and go to state 10
+    NIL             shift and go to state 11
+
+    sexpression                    shift and go to state 12
     atom                           shift and go to state 5
 
 state 15
 
-    (4) sexpression -> LPAREN sexpression_list . RPAREN
+    (4) sexpression -> QUOTE LPAREN sexpression_list . RPAREN
     (1) sexpression_list -> sexpression_list . sexpression
-    (3) sexpression -> . QUOTE LPAREN sexpression_list RPAREN
-    (4) sexpression -> . LPAREN sexpression_list RPAREN
-    (5) sexpression -> . atom
-    (6) atom -> . SYMBOL
-    (7) atom -> . INTEGER
-    (8) atom -> . BOOL
-    (9) atom -> . FLOAT
+    (4) sexpression -> . QUOTE LPAREN sexpression_list RPAREN
+    (5) sexpression -> . LPAREN sexpression_list RPAREN
+    (6) sexpression -> . atom
+    (7) atom -> . SYMBOL
+    (8) atom -> . INTEGER
+    (9) atom -> . BOOL
     (10) atom -> . CHAR
     (11) atom -> . STRING
     (12) atom -> . NIL
@@ -359,73 +409,68 @@ state 15
     SYMBOL          shift and go to state 6
     INTEGER         shift and go to state 7
     BOOL            shift and go to state 8
-    FLOAT           shift and go to state 9
-    CHAR            shift and go to state 10
-    STRING          shift and go to state 11
-    NIL             shift and go to state 12
+    CHAR            shift and go to state 9
+    STRING          shift and go to state 10
+    NIL             shift and go to state 11
 
-    sexpression                    shift and go to state 13
+    sexpression                    shift and go to state 12
     atom                           shift and go to state 5
 
 state 16
 
-    (3) sexpression -> QUOTE LPAREN sexpression_list . RPAREN
-    (1) sexpression_list -> sexpression_list . sexpression
-    (3) sexpression -> . QUOTE LPAREN sexpression_list RPAREN
-    (4) sexpression -> . LPAREN sexpression_list RPAREN
-    (5) sexpression -> . atom
-    (6) atom -> . SYMBOL
-    (7) atom -> . INTEGER
-    (8) atom -> . BOOL
-    (9) atom -> . FLOAT
-    (10) atom -> . CHAR
-    (11) atom -> . STRING
-    (12) atom -> . NIL
+    (5) sexpression -> LPAREN sexpression_list RPAREN .
 
-    RPAREN          shift and go to state 18
-    QUOTE           shift and go to state 3
-    LPAREN          shift and go to state 4
-    SYMBOL          shift and go to state 6
-    INTEGER         shift and go to state 7
-    BOOL            shift and go to state 8
-    FLOAT           shift and go to state 9
-    CHAR            shift and go to state 10
-    STRING          shift and go to state 11
-    NIL             shift and go to state 12
+    QUOTE           reduce using rule 5 (sexpression -> LPAREN sexpression_list RPAREN .)
+    LPAREN          reduce using rule 5 (sexpression -> LPAREN sexpression_list RPAREN .)
+    SYMBOL          reduce using rule 5 (sexpression -> LPAREN sexpression_list RPAREN .)
+    INTEGER         reduce using rule 5 (sexpression -> LPAREN sexpression_list RPAREN .)
+    BOOL            reduce using rule 5 (sexpression -> LPAREN sexpression_list RPAREN .)
+    CHAR            reduce using rule 5 (sexpression -> LPAREN sexpression_list RPAREN .)
+    STRING          reduce using rule 5 (sexpression -> LPAREN sexpression_list RPAREN .)
+    NIL             reduce using rule 5 (sexpression -> LPAREN sexpression_list RPAREN .)
+    $end            reduce using rule 5 (sexpression -> LPAREN sexpression_list RPAREN .)
+    RPAREN          reduce using rule 5 (sexpression -> LPAREN sexpression_list RPAREN .)
 
-    sexpression                    shift and go to state 13
-    atom                           shift and go to state 5
 
 state 17
 
-    (4) sexpression -> LPAREN sexpression_list RPAREN .
+    (4) sexpression -> QUOTE LPAREN sexpression_list RPAREN .
 
-    QUOTE           reduce using rule 4 (sexpression -> LPAREN sexpression_list RPAREN .)
-    LPAREN          reduce using rule 4 (sexpression -> LPAREN sexpression_list RPAREN .)
-    SYMBOL          reduce using rule 4 (sexpression -> LPAREN sexpression_list RPAREN .)
-    INTEGER         reduce using rule 4 (sexpression -> LPAREN sexpression_list RPAREN .)
-    BOOL            reduce using rule 4 (sexpression -> LPAREN sexpression_list RPAREN .)
-    FLOAT           reduce using rule 4 (sexpression -> LPAREN sexpression_list RPAREN .)
-    CHAR            reduce using rule 4 (sexpression -> LPAREN sexpression_list RPAREN .)
-    STRING          reduce using rule 4 (sexpression -> LPAREN sexpression_list RPAREN .)
-    NIL             reduce using rule 4 (sexpression -> LPAREN sexpression_list RPAREN .)
-    $end            reduce using rule 4 (sexpression -> LPAREN sexpression_list RPAREN .)
-    RPAREN          reduce using rule 4 (sexpression -> LPAREN sexpression_list RPAREN .)
+    QUOTE           reduce using rule 4 (sexpression -> QUOTE LPAREN sexpression_list RPAREN .)
+    LPAREN          reduce using rule 4 (sexpression -> QUOTE LPAREN sexpression_list RPAREN .)
+    SYMBOL          reduce using rule 4 (sexpression -> QUOTE LPAREN sexpression_list RPAREN .)
+    INTEGER         reduce using rule 4 (sexpression -> QUOTE LPAREN sexpression_list RPAREN .)
+    BOOL            reduce using rule 4 (sexpression -> QUOTE LPAREN sexpression_list RPAREN .)
+    CHAR            reduce using rule 4 (sexpression -> QUOTE LPAREN sexpression_list RPAREN .)
+    STRING          reduce using rule 4 (sexpression -> QUOTE LPAREN sexpression_list RPAREN .)
+    NIL             reduce using rule 4 (sexpression -> QUOTE LPAREN sexpression_list RPAREN .)
+    $end            reduce using rule 4 (sexpression -> QUOTE LPAREN sexpression_list RPAREN .)
+    RPAREN          reduce using rule 4 (sexpression -> QUOTE LPAREN sexpression_list RPAREN .)
 
-
-state 18
-
-    (3) sexpression -> QUOTE LPAREN sexpression_list RPAREN .
-
-    QUOTE           reduce using rule 3 (sexpression -> QUOTE LPAREN sexpression_list RPAREN .)
-    LPAREN          reduce using rule 3 (sexpression -> QUOTE LPAREN sexpression_list RPAREN .)
-    SYMBOL          reduce using rule 3 (sexpression -> QUOTE LPAREN sexpression_list RPAREN .)
-    INTEGER         reduce using rule 3 (sexpression -> QUOTE LPAREN sexpression_list RPAREN .)
-    BOOL            reduce using rule 3 (sexpression -> QUOTE LPAREN sexpression_list RPAREN .)
-    FLOAT           reduce using rule 3 (sexpression -> QUOTE LPAREN sexpression_list RPAREN .)
-    CHAR            reduce using rule 3 (sexpression -> QUOTE LPAREN sexpression_list RPAREN .)
-    STRING          reduce using rule 3 (sexpression -> QUOTE LPAREN sexpression_list RPAREN .)
-    NIL             reduce using rule 3 (sexpression -> QUOTE LPAREN sexpression_list RPAREN .)
-    $end            reduce using rule 3 (sexpression -> QUOTE LPAREN sexpression_list RPAREN .)
-    RPAREN          reduce using rule 3 (sexpression -> QUOTE LPAREN sexpression_list RPAREN .)
-
+WARNING: 
+WARNING: Conflicts:
+WARNING: 
+WARNING: shift/reduce conflict for QUOTE in state 0 resolved as shift
+WARNING: shift/reduce conflict for LPAREN in state 0 resolved as shift
+WARNING: shift/reduce conflict for SYMBOL in state 0 resolved as shift
+WARNING: shift/reduce conflict for INTEGER in state 0 resolved as shift
+WARNING: shift/reduce conflict for BOOL in state 0 resolved as shift
+WARNING: shift/reduce conflict for CHAR in state 0 resolved as shift
+WARNING: shift/reduce conflict for STRING in state 0 resolved as shift
+WARNING: shift/reduce conflict for NIL in state 0 resolved as shift
+WARNING: shift/reduce conflict for QUOTE in state 4 resolved as shift
+WARNING: shift/reduce conflict for LPAREN in state 4 resolved as shift
+WARNING: shift/reduce conflict for SYMBOL in state 4 resolved as shift
+WARNING: shift/reduce conflict for INTEGER in state 4 resolved as shift
+WARNING: shift/reduce conflict for BOOL in state 4 resolved as shift
+WARNING: shift/reduce conflict for CHAR in state 4 resolved as shift
+WARNING: shift/reduce conflict for STRING in state 4 resolved as shift
+WARNING: shift/reduce conflict for NIL in state 4 resolved as shift
+WARNING: shift/reduce conflict for QUOTE in state 13 resolved as shift
+WARNING: shift/reduce conflict for LPAREN in state 13 resolved as shift
+WARNING: shift/reduce conflict for SYMBOL in state 13 resolved as shift
+WARNING: shift/reduce conflict for INTEGER in state 13 resolved as shift
+WARNING: shift/reduce conflict for BOOL in state 13 resolved as shift
+WARNING: shift/reduce conflict for CHAR in state 13 resolved as shift
+WARNING: shift/reduce conflict for STRING in state 13 resolved as shift
+WARNING: shift/reduce conflict for NIL in state 13 resolved as shift

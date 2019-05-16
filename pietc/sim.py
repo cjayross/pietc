@@ -26,9 +26,10 @@ def restore_stack_offsets ():
 def jump_sim (seq):
     if isinstance(seq, LambdaSequence):
         active_lambdas.append(seq)
-        push_sim(*seq.args)
+        if seq.args:
+            push_sim(*seq.args)
         if seq.stack_offset < 0:
-            raise LambdaError('insufficient arguments for Lambda')
+            raise LambdaError('insufficient arguments for lambda')
     print('jump: {}'.format(seq))
     save_stack_offsets()
     res = evaluate(*seq.eval_args)
@@ -37,7 +38,7 @@ def jump_sim (seq):
     simulate(new)
     print('return: {}'.format(seq))
     if isinstance(seq, LambdaSequence):
-        active_lambdas.remove(seq)
+        active_lambdas.pop()
         stack_size = len(seq.params)
         for _ in range(stack_size):
             if seq.stack_offset != 0:

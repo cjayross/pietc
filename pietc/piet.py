@@ -1,4 +1,5 @@
 import numpy as np
+from collections import deque
 from pietc.eval import Sequence, LambdaSequence, IfElseSequence
 from pietc.debug import debuginfo
 
@@ -22,7 +23,7 @@ COMMAND_DIFFERENTIALS = {
     'out' : (5,2),
 }
 
-active_lambdas = []
+active_lambdas = deque()
 
 class Command (object):
     def __init__ (self, name):
@@ -144,7 +145,7 @@ def push_op (seq, *args):
                 seq.append(Command('roll'))
                 # param depth += 1, stack depth -= 1
             broadcast_stack_change(1)
-        elif issubclass(arg.__class__, Sequence):
+        elif isinstance(arg, Sequence):
             print('warning: sequence recieved in push operation')
         else:
             seq.append(Push(0))

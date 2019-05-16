@@ -6,11 +6,14 @@ from pietc.lex import tokens, lexer
 
 def p_sexpression_list (p):
     '''sexpression_list : sexpression_list sexpression
-                        | sexpression'''
+                        | sexpression
+                        |'''
     if len(p) == 3:
         p[0] = p[1] + [p[2],]
-    else:
+    elif len(p) == 2:
         p[0] = [p[1],]
+    else:
+        p[0] = []
 
 def p_sexpression (p):
     '''sexpression : QUOTE LPAREN sexpression_list RPAREN
@@ -27,7 +30,6 @@ def p_atom (p):
     '''atom : SYMBOL
             | INTEGER
             | BOOL
-            | FLOAT
             | CHAR
             | STRING
             | NIL'''
