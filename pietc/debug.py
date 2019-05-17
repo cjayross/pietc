@@ -6,6 +6,7 @@ FILTERED_PREFIXES = [
     'executing',
     'lambda call',
     'sequence call',
+    'conditional call',
 ]
 
 def debuginfo (form, *args, prefix=''):

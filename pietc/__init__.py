@@ -1,7 +1,9 @@
 import pietc.piet as piet
+from pietc.eval import Sequence, Environment
 Operation = piet.Operation
 
-DEFAULT_ENV = {
+DEFAULT_ENV = Environment({
+    'if' : Operation(None, piet.condition_op),
     '+' : Operation(piet.associative_binary_op, piet.add_op),
     '-' : Operation(piet.associative_binary_op, piet.subtract_op),
     '*' : Operation(piet.associative_binary_op, piet.multiply_op),
@@ -15,4 +17,11 @@ DEFAULT_ENV = {
     'not' : Operation(piet.unary_op, piet.not_op),
     'or' : Operation(piet.associative_binary_op, piet.or_op),
     'and' : Operation(piet.associative_binary_op, piet.and_op),
-}
+})
+
+class Program (Sequence):
+    def __init__ (self):
+        super().__init__([], DEFAULT_ENV)
+
+    def __repr__ (self):
+        return '{}({})'.format(self.__class__.__name__, list(self))

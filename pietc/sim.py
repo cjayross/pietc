@@ -1,9 +1,11 @@
 from functools import wraps
 from collections import deque
-from pietc import DEFAULT_ENV
+from pietc import Program
 from pietc.parse import parser
-from pietc.eval import evaluate, Environment, Sequence, LambdaSequence, LambdaError
-from pietc.piet import Command, Push, Parameter, active_lambdas, broadcast_stack_change
+from pietc.eval import Environment, Sequence, LambdaSequence, Lambda, \
+    LambdaError, evaluate
+from pietc.piet import Command, Push, Conditional, ConditionalLambda, \
+    Parameter, active_lambdas, broadcast_stack_change
 
 stack = deque()
 stack_offset_buffer = deque()
@@ -23,19 +25,20 @@ def restore_stack_offsets ():
     for lamda in active_lambdas:
         lamda.stack_offset = stack_offset_buffer.popleft()
 
+def expand (seq):
+    save_stack_offsets()
+    res = seq.evaluate()
+    restore_stack_offsets()
+    return list(seq) if res is None else [*list(seq), res]
+
 def jump_sim (seq):
     if isinstance(seq, LambdaSequence):
         active_lambdas.append(seq)
-        if seq.args:
-            push_sim(*seq.args)
+        push_sim(*seq.args)
         if seq.stack_offset < 0:
-            raise LambdaError('insufficient arguments for lambda')
+            raise LambdaError('insufficient arguments')
     print('jump: {}'.format(seq))
-    save_stack_offsets()
-    res = evaluate(*seq.eval_args)
-    restore_stack_offsets()
-    new = list(seq) if res is None else [*list(seq), res]
-    simulate(new)
+    simulate(expand(seq))
     print('return: {}'.format(seq))
     if isinstance(seq, LambdaSequence):
         active_lambdas.pop()
@@ -47,14 +50,22 @@ def jump_sim (seq):
             pop_sim()
 
 @printout
-def pop_sim ():
-    stack.pop()
+def condition_sim (cond):
+    simulate(expand(cond.test_seq))
+    cond.choice = stack.pop()
     broadcast_stack_change(-1)
+    return cond if isinstance(cond, ConditionalLambda) else cond.choice
+
+@printout
+def pop_sim ():
+    res = stack.pop()
+    broadcast_stack_change(-1)
+    return res
 
 @printout
 def push_sim (*args):
     for arg in args:
-        if isinstance(arg, (int, float)):
+        if isinstance(arg, int):
             stack.append(arg)
             broadcast_stack_change(1)
         elif isinstance(arg, Sequence):
@@ -69,7 +80,8 @@ def push_sim (*args):
                 push_sim(depth + 1, 1)
                 roll_sim()
         else:
-            push_sim(0)
+            # evaluate calls that return None are assumed to push a value.
+            broadcast_stack_change(1)
 
 @printout
 def roll_sim ():
@@ -77,6 +89,8 @@ def roll_sim ():
     count = stack.pop()
     depth = stack.pop()
     split = len(stack) - depth - 1
+    if split < 0:
+        raise RuntimeWarning('call to roll ignored')
     front = list(stack)[:split]
     back = deque(stack, maxlen=depth+1)
     back.rotate(count)
@@ -131,6 +145,12 @@ def not_sim ():
 
 def simulate (seq):
     for stmt in seq:
+        if isinstance(stmt, Conditional):
+            # set stmt to the result of the conditional
+            res = stmt.choice if stmt.has_choice else condition_sim(stmt)
+            if not isinstance(stmt, Sequence):
+                print('jump: {}'.format(stmt))
+            stmt = res
         if isinstance(stmt, Push):
             if stmt.args:
                 push_sim(*stmt.args)
@@ -155,14 +175,16 @@ def simulate (seq):
                 not_sim()
         elif isinstance(stmt, Sequence):
             jump_sim(stmt)
+        else:
+            push_sim(stmt)
 
 if __name__ == '__main__':
     with open('test.pl') as File:
         code = parser.parse(File.read())
-        global_env = Environment(DEFAULT_ENV)
-        program = []
-        for sexpr in code:
-            res = evaluate(sexpr, global_env, program)
-            if issubclass(res.__class__, Sequence):
-                program.append(res)
-        simulate(program)
+    program = Program()
+    global_env = program.env
+    for sexpr in code:
+        res = evaluate(sexpr, global_env, program)
+        if isinstance(res, (Sequence, Conditional)):
+            program.append(res)
+    simulate(program)

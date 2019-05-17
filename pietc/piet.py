@@ -1,6 +1,6 @@
 import numpy as np
 from collections import deque
-from pietc.eval import Sequence, LambdaSequence, IfElseSequence
+from pietc.eval import Sequence, LambdaSequence
 from pietc.debug import debuginfo
 
 COMMAND_DIFFERENTIALS = {
@@ -48,23 +48,79 @@ class Push (Command):
     def __repr__ (self):
         return '{}{}'.format(self.__class__.__name__, self.args)
 
-class Jump (object):
-    def __init__ (self, dest):
-        self.dest = dest
-
-    def __repr__ (self):
-        return '{}({})'.format(self.__class__.__name__, self.dest)
-
 class Operation (object):
     def __init__ (self, optype, op):
         self.optype = optype
         self.op = op
 
     def __call__ (self, seq, args):
-        return self.optype(seq, args, op=self.op)
+        return self.optype(seq, args, op=self.op) \
+            if self.optype else self.op(seq, args)
 
     def __repr__ (self):
         return '{}({})'.format(self.__class__.__name__, self.op.__name__)
+
+class Conditional (object):
+    """
+    Represent an abstracted choice between two s-expressions.
+
+    The handling of conditional expressions is done manually since
+    conditionals are not allowed to be evaluated until simulated or drawn.
+    """
+    def __init__ (self, if_sexpr, else_sexpr, env):
+        self.test_seq = Sequence(None, env)
+        self.if_sexpr = if_sexpr
+        self.else_sexpr = else_sexpr
+        self.seq = None
+        self.env = env
+
+    @property
+    def has_choice (self):
+        return self.seq is not None
+
+    @property
+    def choice (self):
+        return self.seq.sexpr
+
+    @choice.setter
+    def choice (self, value):
+        sexpr = self.if_sexpr if value else self.else_sexpr
+        self.seq = Sequence(sexpr, self.env)
+
+    def __call__ (self, seq, args):
+        if not self.has_choice:
+            debuginfo('{}({})', self, args, prefix='conditional call')
+            return ConditionalLambda(self, args)
+        function = self.seq.evaluate()
+        debuginfo('{}({})', function, args, prefix='conditional call')
+        return function(seq, args)
+
+    def __repr__ (self):
+        return '{}({}, {})'.format(self.__class__.__name__,
+                                   self.if_sexpr, self.else_sexpr)
+
+class ConditionalLambda (Conditional, Sequence):
+    """
+    Represent a Conditional with stored arguments.
+    """
+    def __init__ (self, conditional, args):
+        self.conditional = conditional
+        self.args = args
+
+    def evaluate (self):
+        if self.has_choice:
+            return self.choice(self, self.args)
+
+    def __getattr__ (self, attr):
+        if hasattr(self.conditional, attr):
+            return getattr(self.conditional, attr)
+        return Sequence.__getattribute__(self, attr)
+
+    def __repr__ (self):
+        return '{}([{}, {}], {})'.format(self.__class__.__name__,
+                                         self.conditional.if_sexpr,
+                                         self.conditional.else_sexpr,
+                                         self.args)
 
 class Parameter (object):
     """
@@ -84,7 +140,8 @@ class Parameter (object):
 
     @property
     def value (self):
-        return self.lamda_seq.local_env.lookup(self)
+        idx = self.lamda_seq.params.index(self)
+        return self.lamda_seq.args[idx]
 
     def __repr__ (self):
         return '{}({})'.format(self.__class__.__name__, self.symbol)
@@ -123,14 +180,25 @@ def associative_binary_op (seq, args, op):
     for arg in args[2:]:
         op(seq, arg)
 
+def condition_op (seq, args):
+    test_sexpr, if_sexpr, else_sexpr = args if len(args) == 3 else (*args, None)
+    cond = Conditional(if_sexpr, else_sexpr, seq.env)
+    push_op(cond.test_seq, test_sexpr)
+    # a jump call pops a value off of the stack.
+    broadcast_stack_change(-1)
+    # this operation returns a value since it does not push onto the stack.
+    return cond
+
 def push_op (seq, *args):
     """
     Place a set of arguments onto the top of the stack.
     """
     for arg in args:
-        if isinstance(arg, (int, float)):
+        if isinstance(arg, int):
             seq.append(Push(arg))
             broadcast_stack_change(1)
+        elif isinstance(arg, Sequence):
+            seq.append(Push(arg))
         elif isinstance(arg, Parameter):
             # depth = param depth + stack depth
             depth = arg.param_depth
@@ -145,10 +213,8 @@ def push_op (seq, *args):
                 seq.append(Command('roll'))
                 # param depth += 1, stack depth -= 1
             broadcast_stack_change(1)
-        elif isinstance(arg, Sequence):
-            print('warning: sequence recieved in push operation')
         else:
-            seq.append(Push(0))
+            # evaluate calls that return None are assumed to push a value.
             broadcast_stack_change(1)
 
 def add_op (seq, *args):
@@ -199,9 +265,7 @@ def not_op (seq, *args):
     seq.append(Command('not'))
 
 def or_op (seq, *args):
-    # NOTE: should the result of this op be normalized?
     add_op(seq, *args)
 
 def and_op (seq, *args):
-    # NOTE: should the result of this op be normalized?
     multiply_op(seq, *args)

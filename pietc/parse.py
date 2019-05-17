@@ -18,11 +18,14 @@ def p_sexpression_list (p):
 def p_sexpression (p):
     '''sexpression : QUOTE LPAREN sexpression_list RPAREN
                    | LPAREN sexpression_list RPAREN
+                   | QUOTE atom
                    | atom'''
     if len(p) == 5:
         p[0] = ['quote', p[3]]
     elif len(p) == 4:
         p[0] = p[2]
+    elif len(p) == 3:
+        p[0] = ['quote', p[2]]
     else:
         p[0] = p[1]
 

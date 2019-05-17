@@ -1,6 +1,9 @@
 from functools import partial
 from pietc.debug import debuginfo
 
+class LambdaError (RuntimeError):
+    pass
+
 class Environment (dict):
     """
     Represent the program's environment within a given scope.
@@ -31,6 +34,10 @@ class Environment (dict):
     def bind (self, key, value):
         self.update({key : value})
 
+    def __repr__ (self):
+        return '{}({})'.format(self.__class__.__name__,
+                               list(zip(self.keys(), self.values())))
+
 class Sequence (list):
     """
     Store an s-expression to be evaluated later.
@@ -50,18 +57,29 @@ class Sequence (list):
         # to store a deepcopy of the environment so that the scope
         # for this sequence remains static past this point.
         self.env = env
-        self.eval_args = (self.sexpr, self.env, self)
+
+    def peek_sexpr (self):
+        if not self.sexpr:
+            return None
+        if not isinstance(self.sexpr, list):
+            return get_atom(self.env, self.sexpr)
+        procedure, *args = self.sexpr
+        if procedure == 'quote':
+            return procedure_call(self.env, args, proc=quote_proc, arg_count=1)
+        if procedure == 'lambda':
+            return procedure_call(self.env, args, proc=lambda_proc, arg_count=2)
+        return self
+
+    def evaluate (self):
+        return evaluate(self.sexpr, self.env, self)
 
     def __call__ (self, seq, args):
-        function = evaluate(*self.eval_args)
+        function = self.evaluate()
         debuginfo('{}({})', function, args, prefix='sequence call')
         return function(seq, args)
 
     def __repr__ (self):
         return '{}({})'.format(self.__class__.__name__, self.sexpr)
-
-class LambdaError (RuntimeError):
-    pass
 
 class LambdaSequence (Sequence):
     """
@@ -90,18 +108,6 @@ class LambdaSequence (Sequence):
                                    self.sexpr,
                                    list(zip(self.lamda.params, self.args)))
 
-class IfElseSequence (Sequence):
-    def __init__ (self, test_sexpr, if_sexpr, else_sexpr, env):
-        super().__init__(test_sexpr, env)
-        self.if_seq = Sequence(if_sexpr, env)
-        self.else_seq = Sequence(else_sexpr, env)
-        # args are stored in case the if_seq/else_seq returns a lambda.
-        self.args = None
-
-    def __call__ (self, seq, args):
-        self.args = args
-        return self
-
 class Lambda (object):
     """
     Define an s-expression that requires a local scope before
@@ -124,10 +130,16 @@ class Lambda (object):
         return '{}({}, {})'.format(self.__class__.__name__,
                                    self.sexpr, self.params)
 
-def procedure_call (proc, args, env, arg_count=None):
+def get_atom (env, atom):
+    if isinstance(atom, str):
+        return env.lookup(atom)
+    return atom
+
+def procedure_call (env, args, proc, arg_count=None):
     "Generic function for invoking a procedure."
     if arg_count and len(args) != arg_count:
-        raise RuntimeError('%s: invalid number of arguments' % str(proc))
+        raise RuntimeError('{}: invalid number of arguments'
+                           .format(proc.__name__))
     return proc(env, *args)
 
 def quote_proc (env, *args):
@@ -137,12 +149,7 @@ def quote_proc (env, *args):
 def define_proc (env, *args):
     "Bind a symbol to an s-expression."
     sym, sexpr = args
-    env.bind(sym, Sequence(sexpr, env))
-
-def if_proc (env, *args):
-    "Store two s-expressions and a test to represent a choice."
-    test_sexpr, if_sexpr, else_sexpr = args
-    return IfElseSequence(test_sexpr, if_sexpr, else_sexpr, env)
+    env.bind(sym, Sequence(sexpr, env).peek_sexpr())
 
 def lambda_proc (env, *args):
     "Store an s-expression as a Lambda."
@@ -153,21 +160,16 @@ def evaluate (sexpr, env, seq):
     "Recursive function for evaluating an s-expression within a given scope."
     debuginfo('{}', sexpr, prefix='evaluating')
     if not isinstance(sexpr, list):
-        if isinstance(sexpr, str):
-            return env.lookup(sexpr)
-        else:
-            return sexpr
+        return get_atom(env, sexpr)
     # procedures are functions that manipulate program flow and the environment.
     procedure, *args = sexpr
     if isinstance(procedure, str):
+        if procedure == 'define':
+            return procedure_call(env, args, proc=define_proc, arg_count=2)
         if procedure == 'quote':
-            return procedure_call(quote_proc, args, env, arg_count=1)
-        elif procedure == 'if':
-            return procedure_call(if_proc, args, env, arg_count=3)
-        elif procedure == 'define':
-            return procedure_call(define_proc, args, env, arg_count=2)
-        elif procedure == 'lambda':
-            return procedure_call(lambda_proc, args, env, arg_count=2)
+            return procedure_call(env, args, proc=quote_proc, arg_count=1)
+        if procedure == 'lambda':
+            return procedure_call(env, args, proc=lambda_proc, arg_count=2)
     # operators are functions that manipulate the sequence and calls piet commands.
     operator, *operand = map(partial(evaluate, env=env, seq=seq), tuple(sexpr))
     debuginfo('{}({})', operator, operand, prefix='executing')
