@@ -32,6 +32,8 @@ def expand (seq):
     return list(seq) if res is None else [*list(seq), res]
 
 def jump_sim (seq):
+    if isinstance(seq, Conditional):
+        seq = condition_sim(seq)
     if isinstance(seq, LambdaSequence):
         active_lambdas.append(seq)
         push_sim(*seq.args)
