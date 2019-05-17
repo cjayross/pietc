@@ -107,6 +107,14 @@ class ConditionalLambda (Conditional, Sequence):
         self.conditional = conditional
         self.args = args
 
+    @property
+    def choice (self):
+        return self.conditional.choice
+
+    @choice.setter
+    def choice (self, value):
+        self.conditional.choice = value
+
     def evaluate (self):
         if self.has_choice:
             return self.choice(self, self.args)

@@ -5,5 +5,5 @@
 ;; (if #t (identity 10) (identity 0))
 ;; ((verbose (if #t identity)) 10)
 ;; ((if #t identity) 10)
-((if #t (repeat (repeat identity))) 10)
-;; ((repeat (if #t (repeat identity))) 10)
+;; ((if #t (repeat (repeat identity))) 10)
+((repeat (if #t (repeat identity))) 10)
