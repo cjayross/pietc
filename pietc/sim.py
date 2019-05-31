@@ -71,13 +71,13 @@ def pop_sim ():
     broadcast_stack_change(-1)
     return res
 
-@printout
 def push_sim (*args):
     for arg in args:
         if isinstance(arg, Conditional):
             arg = get_condition(arg)
         if isinstance(arg, int):
             stack.append(arg)
+            print('push_sim: {}'.format(list(stack)))
             broadcast_stack_change(1)
         elif isinstance(arg, Sequence):
             jump_sim(arg)

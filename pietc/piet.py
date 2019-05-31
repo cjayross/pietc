@@ -205,7 +205,7 @@ def push_op (seq, *args):
         if isinstance(arg, int):
             seq.append(Push(arg))
             broadcast_stack_change(1)
-        elif isinstance(arg, Sequence):
+        elif isinstance(arg, (Sequence, Conditional)):
             seq.append(Push(arg))
         elif isinstance(arg, Parameter):
             # depth = param depth + stack depth
