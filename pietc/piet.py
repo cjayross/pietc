@@ -241,6 +241,10 @@ def divide_op (seq, *args):
     push_op(seq, *args)
     seq.append(Command('divide'))
 
+def negate_op (seq, *args):
+    push_op(seq, 0, *args)
+    seq.append(Command('subtract'))
+
 def modulo_op (seq, *args):
     push_op(seq, *args)
     seq.append(Command('mod'))
@@ -249,6 +253,10 @@ def equal_op (seq, *args):
     push_op(seq, *args)
     seq.append(Command('subtract'))
     seq.append(Command('not'))
+
+def not_equal_op (seq, *args):
+    push_op(seq, *args)
+    seq.append(Command('subtract'))
 
 def greater_op (seq, *args):
     push_op(seq, *args)

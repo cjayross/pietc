@@ -31,6 +31,15 @@ def expand (seq):
     restore_stack_offsets()
     return list(seq) if res is None else [*list(seq), res]
 
+def get_condition (cond):
+    while isinstance(cond, Conditional):
+        res = cond.choice if cond.has_choice else condition_sim(cond)
+        if isinstance(res, Sequence):
+            break
+        print('jump: {}'.format(cond))
+        cond = res
+    return cond
+
 def jump_sim (seq):
     if isinstance(seq, LambdaSequence):
         active_lambdas.append(seq)
@@ -65,20 +74,26 @@ def pop_sim ():
 @printout
 def push_sim (*args):
     for arg in args:
+        if isinstance(arg, Conditional):
+            arg = get_condition(arg)
         if isinstance(arg, int):
             stack.append(arg)
             broadcast_stack_change(1)
         elif isinstance(arg, Sequence):
             jump_sim(arg)
         elif isinstance(arg, Parameter):
+            # depth = param depth + stack depth
             depth = arg.param_depth
             if depth != 0:
                 push_sim(depth, -1)
                 roll_sim()
+                # param depth -= 1, stack depth += 1
             duplicate_sim()
+            # stack depth += 1
             if depth != 0:
                 push_sim(depth + 1, 1)
                 roll_sim()
+                # param depth += 1, stack depth -= 1
         else:
             # evaluate calls that return None are assumed to push a value.
             broadcast_stack_change(1)
@@ -143,36 +158,27 @@ def not_sim ():
     x = stack.pop()
     stack.append(int(not x))
 
+LOOKUPSIM = {
+    'roll' : roll_sim,
+    'duplicate' : duplicate_sim,
+    'add' : add_sim,
+    'subtract' : subtract_sim,
+    'multiply' : multiply_sim,
+    'divide' : divide_sim,
+    'mod' : modulo_sim,
+    'greater' : greater_sim,
+    'not' : not_sim,
+}
+
 def simulate (seq):
     for stmt in seq:
         if isinstance(stmt, Conditional):
-            # set stmt to the result of the conditional
-            res = stmt.choice if stmt.has_choice else condition_sim(stmt)
-            if not isinstance(stmt, Sequence):
-                print('jump: {}'.format(stmt))
-            stmt = res
+            stmt = get_condition(stmt)
         if isinstance(stmt, Push):
             if stmt.args:
                 push_sim(*stmt.args)
         elif isinstance(stmt, Command):
-            if stmt.name == 'roll':
-                roll_sim()
-            elif stmt.name == 'duplicate':
-                duplicate_sim()
-            elif stmt.name == 'add':
-                add_sim()
-            elif stmt.name == 'subtract':
-                subtract_sim()
-            elif stmt.name == 'multiply':
-                multiply_sim()
-            elif stmt.name == 'divide':
-                divide_sim()
-            elif stmt.name == 'mod':
-                modulo_sim()
-            elif stmt.name == 'greater':
-                greater_sim()
-            elif stmt.name == 'not':
-                not_sim()
+            LOOKUPSIM[stmt.name]()
         elif isinstance(stmt, Sequence):
             jump_sim(stmt)
         else:
