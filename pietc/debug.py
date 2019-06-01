@@ -1,5 +1,6 @@
 DEBUG = True
 
+# uncomment filters to print their debug info.
 FILTERED_PREFIXES = [
     'broadcast',
     'evaluating',

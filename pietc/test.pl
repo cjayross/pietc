@@ -2,4 +2,4 @@
 (define twice (lambda (x) (* 2 x)))
 (define repeat (lambda (f) (lambda (y) (f (f y)))))
 (define verbose (lambda (f) (lambda (y) (f y))))
-((if (if #t #t) twice) 5)
+((verbose (if #t identity)) 5)
