@@ -38,6 +38,35 @@ class Environment (dict):
         return '{}({})'.format(self.__class__.__name__,
                                list(zip(self.keys(), self.values())))
 
+class Parameter (object):
+    """
+    Define a lambda argument so that it can be identified across
+    separate lambda calls.
+
+    Note that the parameter's value is not stored since identifying
+    this parameter's location in the stack is sufficient.
+    """
+    def __init__ (self, symbol, lamda_seq):
+        self.lamda_seq = lamda_seq
+        self.symbol = symbol
+
+    @property
+    def param_depth (self):
+        return self.lamda_seq.param_depth(self)
+
+    @property
+    def value (self):
+        idx = self.lamda_seq.params.index(self)
+        return self.lamda_seq.args[idx]
+
+    def __repr__ (self):
+        return '{}({})'.format(self.__class__.__name__, self.symbol)
+
+    def __call__ (self, seq, args):
+        idx = self.lamda_seq.param_offset[self]
+        function = self.lamda_seq.args[idx]
+        return function(seq, args)
+
 class Sequence (list):
     """
     Store an s-expression to be evaluated later.
@@ -87,8 +116,6 @@ class LambdaSequence (Sequence):
     defined within a local scope.
     """
     def __init__ (self, lamda, args):
-        from pietc.piet import Parameter
-
         self.lamda = lamda
         self.args = args
         self.params = tuple(map(partial(Parameter, lamda_seq=self),
@@ -156,6 +183,12 @@ def lambda_proc (env, *args):
     params, sexpr = args
     return Lambda(params, sexpr, env)
 
+LOOKUPPROC = {
+    'define' : partial(procedure_call, proc=define_proc, arg_count=2),
+    'quote' : partial(procedure_call, proc=quote_proc, arg_count=1),
+    'lambda' : partial(procedure_call, proc=lambda_proc, arg_count=2),
+}
+
 def evaluate (sexpr, env, seq):
     "Recursive function for evaluating an s-expression within a given scope."
     debuginfo('{}', sexpr, prefix='evaluating')
@@ -163,13 +196,8 @@ def evaluate (sexpr, env, seq):
         return get_atom(env, sexpr)
     # procedures are functions that manipulate program flow and the environment.
     procedure, *args = sexpr
-    if isinstance(procedure, str):
-        if procedure == 'define':
-            return procedure_call(env, args, proc=define_proc, arg_count=2)
-        if procedure == 'quote':
-            return procedure_call(env, args, proc=quote_proc, arg_count=1)
-        if procedure == 'lambda':
-            return procedure_call(env, args, proc=lambda_proc, arg_count=2)
+    if isinstance(procedure, str) and procedure in LOOKUPPROC:
+        return LOOKUPPROC[procedure](env, args)
     # operators are functions that manipulate the sequence and calls piet commands.
     operator, *operand = map(partial(evaluate, env=env, seq=seq), tuple(sexpr))
     debuginfo('{}({})', operator, operand, prefix='executing')

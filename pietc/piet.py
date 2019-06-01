@@ -1,6 +1,6 @@
 import numpy as np
 from collections import deque
-from pietc.eval import Sequence, LambdaSequence
+from pietc.eval import Parameter, Sequence, LambdaSequence
 from pietc.debug import debuginfo
 
 COMMAND_DIFFERENTIALS = {
@@ -129,35 +129,6 @@ class ConditionalLambda (Conditional, Sequence):
                                          self.conditional.if_sexpr,
                                          self.conditional.else_sexpr,
                                          self.args)
-
-class Parameter (object):
-    """
-    Define a lambda argument so that it can be identified across
-    separate lambda calls.
-
-    Note that the parameter's value is not stored since identifying
-    this parameter's location in the stack is sufficient.
-    """
-    def __init__ (self, symbol, lamda_seq):
-        self.lamda_seq = lamda_seq
-        self.symbol = symbol
-
-    @property
-    def param_depth (self):
-        return self.lamda_seq.param_depth(self)
-
-    @property
-    def value (self):
-        idx = self.lamda_seq.params.index(self)
-        return self.lamda_seq.args[idx]
-
-    def __repr__ (self):
-        return '{}({})'.format(self.__class__.__name__, self.symbol)
-
-    def __call__ (self, seq, args):
-        idx = self.lamda_seq.param_offset[self]
-        function = self.lamda_seq.args[idx]
-        return function(seq, args)
 
 def broadcast_stack_change (stack_delta):
     for seq in active_lambdas:
