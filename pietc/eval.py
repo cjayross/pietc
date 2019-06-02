@@ -93,8 +93,9 @@ class LambdaSequence (Sequence):
         self.local_env = Environment(dict(zip(self.lamda.params, self.params)),
                                      parent_env=self.lamda.env)
         self.param_offset = dict(map(reversed, enumerate(self.params)))
-        # a negative offset implies that the args have not yet been pushed.
-        self.stack_offset = -len(self.params)
+        self.stack_offset = 0
+        self.stack_size = len([arg for arg in self.args \
+                               if isinstance(arg, Atom)])
         super().__init__(self.lamda.sexpr, self.local_env)
 
     def param_depth (self, param):
@@ -116,11 +117,14 @@ class Lambda (object):
         self.env = env
 
     def __call__ (self, seq, args):
+        # calling a lambda requires modifying the sequence.
+        from pietc.piet import push_op
         if len(args) != len(self.params):
             raise RuntimeError('lambda: invalid number of parameters')
         debuginfo('{}({}, {})', self.__class__.__name__,
                   self.sexpr, list(zip(self.params, args)),
                   prefix='lambda call')
+        push_op(seq, *args)
         return LambdaSequence(self, args)
 
     def __repr__ (self):
@@ -225,6 +229,8 @@ class ConditionalLambda (Conditional, Sequence):
                                          self.conditional.if_sexpr,
                                          self.conditional.else_sexpr,
                                          self.args)
+
+Atom = (int, Parameter)
 
 def get_atom (env, atom):
     if isinstance(atom, str):

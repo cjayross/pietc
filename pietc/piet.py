@@ -38,15 +38,12 @@ class Command (object):
         return '{}({})'.format(self.__class__.__name__, self.name)
 
 class Push (Command):
-    def __init__ (self, *values):
-        if not values:
-            raise RuntimeError('push: insufficient number of arguments')
+    def __init__ (self, value):
         super().__init__(name='push')
-        self.args = values
-        self.has_args = True
+        self.value = value
 
     def __repr__ (self):
-        return '{}{}'.format(self.__class__.__name__, self.args)
+        return '{}({})'.format(self.__class__.__name__, self.value)
 
 class Operation (object):
     def __init__ (self, optype, op):
@@ -112,17 +109,17 @@ def push_op (seq, *args):
             # depth = param depth + stack depth
             depth = arg.param_depth
             if depth != 0:
-                seq.append(Push(depth, -1))
+                push_op(seq, depth, -1)
                 seq.append(Command('roll'))
                 # param depth -= 1, stack depth += 1
             seq.append(Command('duplicate'))
             # stack depth += 1
             if depth != 0:
-                seq.append(Push(depth + 1, 1))
+                push_op(seq, depth + 1, 1)
                 seq.append(Command('roll'))
                 # param depth += 1, stack depth -= 1
-        else:
-            raise RuntimeWarning('unexpected item pushed: {}'.format(arg))
+        # else:
+        #     raise RuntimeWarning('unexpected item pushed: {}'.format(arg))
 
 def add_op (seq, *args):
     push_op(seq, *args)

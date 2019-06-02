@@ -42,16 +42,12 @@ def get_condition (cond):
 def jump_sim (seq):
     if isinstance(seq, LambdaSequence):
         active_lambdas.append(seq)
-        push_sim(*seq.args)
-        if seq.stack_offset < 0:
-            raise LambdaError('insufficient arguments')
     print('jump: {}'.format(seq))
     simulate(expand(seq))
     print('return: {}'.format(seq))
     if isinstance(seq, LambdaSequence):
         active_lambdas.pop()
-        stack_size = len(seq.params)
-        for _ in range(stack_size):
+        for _ in range(seq.stack_size):
             if seq.stack_offset != 0:
                 push_sim(seq.stack_offset, -1)
                 roll_sim()
@@ -93,8 +89,8 @@ def push_sim (*args):
                 push_sim(depth + 1, 1)
                 roll_sim()
                 # param depth += 1, stack depth -= 1
-        else:
-            raise RuntimeWarning('unexpected item pushed: {}'.format(arg))
+        # else:
+        #     raise RuntimeWarning('unexpected item pushed: {}'.format(arg))
 
 @printout
 def roll_sim ():
@@ -173,8 +169,7 @@ def simulate (seq):
         if isinstance(stmt, Conditional):
             stmt = get_condition(stmt)
         if isinstance(stmt, Push):
-            if stmt.args:
-                push_sim(*stmt.args)
+            push_sim(stmt.value)
         elif isinstance(stmt, Command):
             LOOKUPSIM[stmt.name]()
         elif isinstance(stmt, Sequence):
@@ -191,5 +186,5 @@ if __name__ == '__main__':
         res = evaluate(sexpr, global_env, program)
         if isinstance(res, (Sequence, Conditional)):
             program.append(res)
-    # print(program)
+    print(program)
     simulate(program)
