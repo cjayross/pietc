@@ -208,7 +208,7 @@ class Conditional (object):
         return '{}({}, {})'.format(self.__class__.__name__,
                                    self.if_sexpr, self.else_sexpr)
 
-class ConditionalLambda (Conditional, Sequence):
+class ConditionalLambda (Conditional, MacroSequence):
     """
     Represent a Conditional with stored arguments.
     """

@@ -36,7 +36,7 @@ def get_condition (cond):
         res = cond.choice if cond.has_choice else condition_sim(cond)
         if isinstance(cond, MacroSequence):
             break
-        print('jump: {} -> {}'.format(cond, res.sexpr))
+        print('jump: {} -> {}'.format(cond, res))
         cond = res
     return cond
 
