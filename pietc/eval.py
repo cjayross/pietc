@@ -230,7 +230,7 @@ class ConditionalLambda (Conditional, Sequence):
                                          self.conditional.else_sexpr,
                                          self.args)
 
-Atom = (int, Parameter)
+Atom = (int, Parameter, Sequence, Conditional, type(None))
 
 def get_atom (env, atom):
     if isinstance(atom, str):
@@ -273,6 +273,8 @@ def evaluate (sexpr, env, seq):
     procedure, *args = sexpr
     if isinstance(procedure, str) and procedure in LOOKUPPROC:
         return LOOKUPPROC[procedure](env, args)
+    elif procedure == 'if':
+        return env.lookup(procedure)(seq, args)
     # operators are functions that manipulate the sequence and calls piet commands.
     operator, *operand = map(partial(evaluate, env=env, seq=seq), tuple(sexpr))
     debuginfo('{}({})', operator, operand, prefix='executing')

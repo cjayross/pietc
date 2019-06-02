@@ -61,7 +61,7 @@ def broadcast_stack_change (stack_delta):
     for seq in active_lambdas:
         seq.stack_offset += stack_delta
         debuginfo('{} ({} -> {})',
-                  seq, seq.stack_offset-stack_delta,
+                  seq, seq.stack_offset - stack_delta,
                   seq.stack_offset,
                   prefix='broadcast')
 
@@ -104,22 +104,31 @@ def push_op (seq, *args):
             seq.append(Push(arg))
             broadcast_stack_change(1)
         elif isinstance(arg, (Sequence, Conditional)):
+            # the sequence will handle broadcasting stack changes
             seq.append(Push(arg))
         elif isinstance(arg, Parameter):
             # depth = param depth + stack depth
             depth = arg.param_depth
             if depth != 0:
                 push_op(seq, depth, -1)
-                seq.append(Command('roll'))
+                roll_op(seq)
                 # param depth -= 1, stack depth += 1
-            seq.append(Command('duplicate'))
+            duplicate_op(seq)
             # stack depth += 1
             if depth != 0:
                 push_op(seq, depth + 1, 1)
-                seq.append(Command('roll'))
+                roll_op(seq)
                 # param depth += 1, stack depth -= 1
         # else:
         #     raise RuntimeWarning('unexpected item pushed: {}'.format(arg))
+
+def duplicate_op (seq):
+    seq.append(Command('duplicate'))
+    broadcast_stack_change(1)
+
+def roll_op (seq):
+    seq.append(Command('roll'))
+    broadcast_stack_change(-2)
 
 def add_op (seq, *args):
     push_op(seq, *args)

@@ -35,7 +35,7 @@ def get_condition (cond):
         res = cond.choice if cond.has_choice else condition_sim(cond)
         if isinstance(res, Sequence):
             break
-        print('jump: {}'.format(cond))
+        print('jump: {} -> {}'.format(cond, res))
         cond = res
     return cond
 
