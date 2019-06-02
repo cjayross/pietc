@@ -2,8 +2,9 @@ from functools import wraps
 from collections import deque
 from pietc import Program
 from pietc.parse import parser
-from pietc.eval import Environment, Sequence, LambdaSequence, Lambda, \
-    Parameter, Conditional, ConditionalLambda, LambdaError, evaluate
+from pietc.eval import Environment, Sequence, MacroSequence, \
+    LambdaSequence, Lambda, Parameter, Conditional, ConditionalLambda, \
+    LambdaError, evaluate
 from pietc.piet import Command, Push, active_lambdas, broadcast_stack_change
 
 stack = deque()
@@ -33,25 +34,27 @@ def expand (seq):
 def get_condition (cond):
     while isinstance(cond, Conditional):
         res = cond.choice if cond.has_choice else condition_sim(cond)
-        if isinstance(res, Sequence):
+        if isinstance(cond, MacroSequence):
             break
-        print('jump: {} -> {}'.format(cond, res))
+        print('jump: {} -> {}'.format(cond, res.sexpr))
         cond = res
     return cond
 
 def jump_sim (seq):
-    if isinstance(seq, LambdaSequence):
-        active_lambdas.append(seq)
-    print('jump: {}'.format(seq))
+    if isinstance(seq, MacroSequence):
+        print('jump: {}'.format(seq))
+        if isinstance(seq, LambdaSequence):
+            active_lambdas.append(seq)
     simulate(expand(seq))
-    print('return: {}'.format(seq))
-    if isinstance(seq, LambdaSequence):
-        active_lambdas.pop()
-        for _ in range(seq.stack_size):
-            if seq.stack_offset != 0:
-                push_sim(seq.stack_offset, -1)
-                roll_sim()
-            pop_sim()
+    if isinstance(seq, MacroSequence):
+        print('return: {}'.format(seq))
+        if isinstance(seq, LambdaSequence):
+            active_lambdas.pop()
+            for _ in range(seq.stack_size):
+                if seq.stack_offset != 0:
+                    push_sim(seq.stack_offset, -1)
+                    roll_sim()
+                pop_sim()
 
 @printout
 def condition_sim (cond):
