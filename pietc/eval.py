@@ -80,10 +80,19 @@ class Sequence (list):
     def __repr__ (self):
         return '{}({})'.format(self.__class__.__name__, self.sexpr)
 
-class LambdaSequence (Sequence):
+class MacroSequence (Sequence):
+    """
+    Represents a Sequence that may be referred to more than once.
+    """
+    pass
+
+class LambdaSequence (MacroSequence):
     """
     Represent a Sequence that manages a set of arguments to be
     defined within a local scope.
+
+    Note that all lambdas are defined as dedicated function calls,
+    even if they are not bound to a symbol.
     """
     def __init__ (self, lamda, args):
         self.lamda = lamda
@@ -180,7 +189,7 @@ class Conditional (object):
 
     @property
     def choice (self):
-        return self.seq.sexpr
+        return self.seq
 
     @choice.setter
     def choice (self, value):
@@ -251,7 +260,7 @@ def quote_proc (env, *args):
 def define_proc (env, *args):
     "Bind a symbol to an s-expression."
     sym, sexpr = args
-    env.bind(sym, Sequence(sexpr, env).peek_sexpr())
+    env.bind(sym, MacroSequence(sexpr, env).peek_sexpr())
 
 def lambda_proc (env, *args):
     "Store an s-expression as a Lambda."
