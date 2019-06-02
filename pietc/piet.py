@@ -121,10 +121,8 @@ def push_op (seq, *args):
                 seq.append(Push(depth + 1, 1))
                 seq.append(Command('roll'))
                 # param depth += 1, stack depth -= 1
-            broadcast_stack_change(1)
         else:
-            # evaluate calls that return None are assumed to push a value.
-            broadcast_stack_change(1)
+            raise RuntimeWarning('unexpected item pushed: {}'.format(arg))
 
 def add_op (seq, *args):
     push_op(seq, *args)

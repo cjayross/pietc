@@ -94,8 +94,7 @@ def push_sim (*args):
                 roll_sim()
                 # param depth += 1, stack depth -= 1
         else:
-            # evaluate calls that return None are assumed to push a value.
-            broadcast_stack_change(1)
+            raise RuntimeWarning('unexpected item pushed: {}'.format(arg))
 
 @printout
 def roll_sim ():
@@ -192,4 +191,5 @@ if __name__ == '__main__':
         res = evaluate(sexpr, global_env, program)
         if isinstance(res, (Sequence, Conditional)):
             program.append(res)
+    # print(program)
     simulate(program)

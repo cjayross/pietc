@@ -2,4 +2,15 @@
 (define twice (lambda (x) (* 2 x)))
 (define repeat (lambda (f) (lambda (y) (f (f y)))))
 (define verbose (lambda (f) (lambda (y) (f y))))
-((verbose (if #t identity)) 5)
+(define hold (lambda (y) (lambda (f) (f y))))
+
+;; Lambda Tests
+;; (identity 5)
+;; ((verbose identity) 5)
+;; ((verbose (verbose identity)) 5)
+;; (twice (identity 5))
+;; (twice ((verbose identity) 5))
+;; ((repeat twice) 5)
+;; ((repeat (repeat twice)) 5)
+;; ((repeat twice) ((repeat identity) 5))
+((hold 5) identity)
