@@ -65,6 +65,14 @@ def broadcast_stack_change (stack_delta):
                   seq.stack_offset,
                   prefix='broadcast')
 
+def save_stack_offsets ():
+    for lamda in active_lambdas:
+        stack_offset_buffer.append(lamda.stack_offset)
+
+def restore_stack_offsets ():
+    for lamda in active_lambdas:
+        lamda.stack_offset = stack_offset_buffer.popleft()
+
 def unary_op (seq, args, op):
     if len(args) != 1:
         raise RuntimeError('%s: invalid number of arguments' % op.__name__)

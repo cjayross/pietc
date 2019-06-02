@@ -6,14 +6,21 @@ class LambdaError (RuntimeError):
 
 class Environment (dict):
     """
-    Represent the program's environment within a given scope.
+    Dictionary object representing the environment within a scope.
 
-    This is a dictionary subclass to manage what symbols have
-    a corresponding definition.
-    The environment within a scope can be extended when a
-    procedure invokes a call to `bind` by which a symbol
-    (such as an argument to a lambda function) can be mapped
-    to an object (such as a Parameter type) or value.
+    Parameters
+    ==========
+
+    base_dict : dict
+        Dictionary that maps string identifiers to values.
+    parent_env : Environment
+        The environment to defer to when a symbol is not matched.
+
+    This is a dictionary subclass to manage what symbols have a corresponding
+    definition. The environment within a scope can be extended when a procedure
+    invokes a call to `bind` by which a symbol (such as an argument to a lambda
+    function) can be mapped to an object (such as a Parameter type) or value.
+
     """
     def __init__ (self, base_dict={}, parent_env=None):
         self.update(base_dict)
@@ -42,14 +49,68 @@ class Sequence (list):
     """
     Store an s-expression to be evaluated later.
 
-    Sequences are used to provide a reference to code that may
-    be referenced more than once. This means that Sequences are
-    likely to become subprograms that can be jumped to during
-    program execution.
+    A Sequence type represents an abstraction of a single s-expression, meaning
+    that they store all the appropriate variables required by a call to
+    `evaluate`.
 
-    Furthermore, it is important to note that Sequences are a
-    list subclass so that a sequence of `piet` commands can
-    be stored to be drawn as a subprogram later.
+    This provides the ability to store and identify s-expressions in the
+    program without modifying the parent sequence belonging to it which is
+    essential for handling sequences that depend on context, such as Lambdas
+    (since the argument stack for Lambdas are buried during runtime, their
+    depth depends on the execution of other sequences).
+
+    Examples
+    ========
+
+    >>> from pietc import DEFAULT_ENV
+    >>> from pietc.eval import Sequence
+    >>> from pietc.piet import active_lambdas
+    >>> global_env = DEFAULT_ENV
+    >>> sexpr = ['define', 'twice', ['lambda', ['x'], ['*', 2, 'x']]]
+    >>> seq = Sequence(sexpr, global_env)
+
+    Evaluate the Sequence. In this case, all that is done is a modification of
+    the environment `global_env` which isn't representable in piet.
+
+    >>> seq.evaluate()
+    >>> list(seq) # there are no piet commands to run based on this expression.
+    []
+    >>> global_env.lookup('twice')
+    Lambda(['x'], ['*', 2, 'x'])
+
+    Evaluate a Sequence that produces piet commands.
+
+    >>> sexpr = ['twice', 10]
+    >>> seq = Sequence(sexpr, global_env)
+    >>> seq.evaluate()
+    LambdaSequence([('x', 10)], ['*', 2, 'x'])
+    >>> res = _
+
+    Since this expression is a call to a Lambda, the sequence pushes the
+    arguments onto the stack and returns the LambdaSequence to jump to.
+
+    >>> list(seq)
+    [Push(10)]
+
+    Assuming that the parent sequence pushed the Lambda's arguments onto the
+    stack, we will need to append the LambdaSequence to `active_lambdas` to
+    keep track of how deep the arguments get buried during evaluation. At the
+    moment this has to be done manually or from within recursively defined
+    functions.
+
+    >>> active_lambdas.append(res)
+    >>> res.evaluate(); list(res)
+    [Push(2),
+     Push(1),
+     Push(-1),
+     Command(roll),
+     Command(duplicate),
+     Push(2),
+     Push(1),
+     Command(roll),
+     Command(multiply)]
+    >>> active_lambdas.pop()
+
     """
     def __init__ (self, sexpr, env):
         self.sexpr = sexpr
@@ -59,6 +120,7 @@ class Sequence (list):
         self.env = env
 
     def peek_sexpr (self):
+        """Return a simplification of the Sequence if possible."""
         if not self.sexpr:
             return None
         if not isinstance(self.sexpr, list):
@@ -70,6 +132,7 @@ class Sequence (list):
         return self
 
     def evaluate (self):
+        """Expand the s-expression using `evaluate`."""
         return evaluate(self.sexpr, self.env, self)
 
     def __call__ (self, seq, args):
@@ -83,16 +146,23 @@ class Sequence (list):
 class MacroSequence (Sequence):
     """
     Represents a Sequence that may be referred to more than once.
+
+    This is simply a separate marker to characterize a Sequence as one that is
+    intended to be drawn as a subroutine in the final image. These Sequences
+    are created whenever an s-expression is bound to an identifier or whenever
+    a Lambda expression is evaluated.
+
     """
     pass
 
 class LambdaSequence (MacroSequence):
     """
-    Represent a Sequence that manages a set of arguments to be
-    defined within a local scope.
+    Represent a Sequence that manages a set of arguments to be defined within a
+    local scope.
 
-    Note that all lambdas are defined as dedicated function calls,
-    even if they are not bound to a symbol.
+    Note that all lambdas are defined as dedicated function calls, even if they
+    are not bound to a symbol.
+
     """
     def __init__ (self, lamda, args):
         self.lamda = lamda
@@ -112,13 +182,12 @@ class LambdaSequence (MacroSequence):
 
     def __repr__ (self):
         return '{}({}, {})'.format(self.__class__.__name__,
-                                   self.sexpr,
-                                   list(zip(self.lamda.params, self.args)))
+                                   list(zip(self.lamda.params, self.args)),
+                                   self.sexpr)
 
 class Lambda (object):
     """
-    Define an s-expression that requires a local scope before
-    it can evaluated.
+    Define an s-expression that requires a local scope before it can evaluated.
     """
     def __init__ (self, params, sexpr, env):
         self.params = params
@@ -138,15 +207,16 @@ class Lambda (object):
 
     def __repr__ (self):
         return '{}({}, {})'.format(self.__class__.__name__,
-                                   self.sexpr, self.params)
+                                   self.params, self.sexpr)
 
 class Parameter (object):
     """
-    Define a lambda argument so that it can be identified across
-    separate lambda calls.
+    Define a lambda argument so that it can be identified across separate
+    lambda calls.
 
-    Note that the parameter's value is not stored since identifying
-    this parameter's location in the stack is sufficient.
+    Note that the parameter's value is not stored since identifying this
+    parameter's location in the stack is sufficient.
+
     """
     def __init__ (self, symbol, lamda_seq):
         self.lamda_seq = lamda_seq
@@ -173,8 +243,9 @@ class Conditional (object):
     """
     Represent an abstracted choice between two s-expressions.
 
-    The handling of conditional expressions is done manually since
-    conditionals are not allowed to be evaluated until simulated or drawn.
+    The handling of conditional expressions is done manually since conditionals
+    are not allowed to be evaluated until simulated or drawn.
+
     """
     def __init__ (self, if_sexpr, else_sexpr, env):
         self.test_seq = Sequence(None, env)
@@ -209,9 +280,7 @@ class Conditional (object):
                                    self.if_sexpr, self.else_sexpr)
 
 class ConditionalLambda (Conditional, MacroSequence):
-    """
-    Represent a Conditional with stored arguments.
-    """
+    """Represent a Conditional with stored arguments."""
     def __init__ (self, conditional, args):
         self.conditional = conditional
         self.args = args
@@ -234,10 +303,10 @@ class ConditionalLambda (Conditional, MacroSequence):
         return Sequence.__getattribute__(self, attr)
 
     def __repr__ (self):
-        return '{}([{}, {}], {})'.format(self.__class__.__name__,
+        return '{}({}, [{}, {}])'.format(self.__class__.__name__,
+                                         self.args,
                                          self.conditional.if_sexpr,
-                                         self.conditional.else_sexpr,
-                                         self.args)
+                                         self.conditional.else_sexpr)
 
 Atom = (int, Parameter, Sequence, Conditional, type(None))
 
@@ -247,23 +316,23 @@ def get_atom (env, atom):
     return atom
 
 def procedure_call (env, args, proc, arg_count=None):
-    "Generic function for invoking a procedure."
+    """Generic function for invoking a procedure."""
     if arg_count and len(args) != arg_count:
         raise RuntimeError('{}: invalid number of arguments'
                            .format(proc.__name__))
     return proc(env, *args)
 
 def quote_proc (env, *args):
-    "Return the first argument without evaluating it."
+    """Return the first argument without evaluating it."""
     return args[0]
 
 def define_proc (env, *args):
-    "Bind a symbol to an s-expression."
+    """Bind a symbol to an s-expression."""
     sym, sexpr = args
     env.bind(sym, MacroSequence(sexpr, env).peek_sexpr())
 
 def lambda_proc (env, *args):
-    "Store an s-expression as a Lambda."
+    """Store an s-expression as a Lambda."""
     params, sexpr = args
     return Lambda(params, sexpr, env)
 
@@ -274,7 +343,25 @@ LOOKUPPROC = {
 }
 
 def evaluate (sexpr, env, seq):
-    "Recursive function for evaluating an s-expression within a given scope."
+    """
+    Recursive function for evaluating an s-expression within a given scope.
+
+    Parameters
+    ==========
+
+    sexpr : str, list
+        The s-expression to be evaluated.
+    env : Environment
+        The scope of the current execution environment. Contains a mapping
+        between defined symbols and their values.
+    seq : Sequence
+        Sequence to store generated piet commands.
+
+    Returns a Sequence or MacroSequence if the evaluation generates them. Such
+    an occurance indicates that context is required to continue evaluation.
+    Otherwise, this function returns `None`.
+
+    """
     debuginfo('{}', sexpr, prefix='evaluating')
     if not isinstance(sexpr, list):
         return get_atom(env, sexpr)
@@ -284,7 +371,7 @@ def evaluate (sexpr, env, seq):
         return LOOKUPPROC[procedure](env, args)
     elif procedure == 'if':
         return env.lookup(procedure)(seq, args)
-    # operators are functions that manipulate the sequence and calls piet commands.
+    # operators are functions that manipulate the sequence.
     operator, *operand = map(partial(evaluate, env=env, seq=seq), tuple(sexpr))
     debuginfo('{}({})', operator, operand, prefix='executing')
     return operator(seq, operand)

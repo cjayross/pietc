@@ -5,7 +5,8 @@ from pietc.parse import parser
 from pietc.eval import Environment, Sequence, MacroSequence, \
     LambdaSequence, Lambda, Parameter, Conditional, ConditionalLambda, \
     LambdaError, evaluate
-from pietc.piet import Command, Push, active_lambdas, broadcast_stack_change
+from pietc.piet import Command, Push, active_lambdas, broadcast_stack_change, \
+    save_stack_offsets, restore_stack_offsets
 
 stack = deque()
 stack_offset_buffer = deque()
@@ -16,14 +17,6 @@ def printout (func):
         print('{}: {}'.format(func.__name__, list(stack)))
         return res
     return wraps
-
-def save_stack_offsets ():
-    for lamda in active_lambdas:
-        stack_offset_buffer.append(lamda.stack_offset)
-
-def restore_stack_offsets ():
-    for lamda in active_lambdas:
-        lamda.stack_offset = stack_offset_buffer.popleft()
 
 def expand (seq):
     save_stack_offsets()
