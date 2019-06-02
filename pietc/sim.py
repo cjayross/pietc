@@ -3,9 +3,8 @@ from collections import deque
 from pietc import Program
 from pietc.parse import parser
 from pietc.eval import Environment, Sequence, LambdaSequence, Lambda, \
-    LambdaError, evaluate
-from pietc.piet import Command, Push, Conditional, ConditionalLambda, \
-    Parameter, active_lambdas, broadcast_stack_change
+    Parameter, Conditional, ConditionalLambda, LambdaError, evaluate
+from pietc.piet import Command, Push, active_lambdas, broadcast_stack_change
 
 stack = deque()
 stack_offset_buffer = deque()

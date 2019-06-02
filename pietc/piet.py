@@ -1,6 +1,6 @@
 import numpy as np
 from collections import deque
-from pietc.eval import Parameter, Sequence, LambdaSequence
+from pietc.eval import Sequence, LambdaSequence, Parameter, Conditional
 from pietc.debug import debuginfo
 
 COMMAND_DIFFERENTIALS = {
@@ -59,76 +59,6 @@ class Operation (object):
 
     def __repr__ (self):
         return '{}({})'.format(self.__class__.__name__, self.op.__name__)
-
-class Conditional (object):
-    """
-    Represent an abstracted choice between two s-expressions.
-
-    The handling of conditional expressions is done manually since
-    conditionals are not allowed to be evaluated until simulated or drawn.
-    """
-    def __init__ (self, if_sexpr, else_sexpr, env):
-        self.test_seq = Sequence(None, env)
-        self.if_sexpr = if_sexpr
-        self.else_sexpr = else_sexpr
-        self.seq = None
-        self.env = env
-
-    @property
-    def has_choice (self):
-        return self.seq is not None
-
-    @property
-    def choice (self):
-        return self.seq.sexpr
-
-    @choice.setter
-    def choice (self, value):
-        sexpr = self.if_sexpr if value else self.else_sexpr
-        self.seq = Sequence(sexpr, self.env)
-
-    def __call__ (self, seq, args):
-        if not self.has_choice:
-            debuginfo('{}({})', self, args, prefix='conditional call')
-            return ConditionalLambda(self, args)
-        function = self.seq.evaluate()
-        debuginfo('{}({})', function, args, prefix='conditional call')
-        return function(seq, args)
-
-    def __repr__ (self):
-        return '{}({}, {})'.format(self.__class__.__name__,
-                                   self.if_sexpr, self.else_sexpr)
-
-class ConditionalLambda (Conditional, Sequence):
-    """
-    Represent a Conditional with stored arguments.
-    """
-    def __init__ (self, conditional, args):
-        self.conditional = conditional
-        self.args = args
-
-    @property
-    def choice (self):
-        return self.conditional.choice
-
-    @choice.setter
-    def choice (self, value):
-        self.conditional.choice = value
-
-    def evaluate (self):
-        if self.has_choice:
-            return self.choice(self, self.args)
-
-    def __getattr__ (self, attr):
-        if hasattr(self.conditional, attr):
-            return getattr(self.conditional, attr)
-        return Sequence.__getattribute__(self, attr)
-
-    def __repr__ (self):
-        return '{}([{}, {}], {})'.format(self.__class__.__name__,
-                                         self.conditional.if_sexpr,
-                                         self.conditional.else_sexpr,
-                                         self.args)
 
 def broadcast_stack_change (stack_delta):
     for seq in active_lambdas:
