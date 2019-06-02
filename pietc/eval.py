@@ -93,10 +93,9 @@ class Sequence (list):
         if not isinstance(self.sexpr, list):
             return get_atom(self.env, self.sexpr)
         procedure, *args = self.sexpr
-        if procedure == 'quote':
-            return procedure_call(self.env, args, proc=quote_proc, arg_count=1)
-        if procedure == 'lambda':
-            return procedure_call(self.env, args, proc=lambda_proc, arg_count=2)
+        if isinstance(procedure, str) and procedure in LOOKUPPROC \
+           and procedure != 'define':
+            return LOOKUPPROC[procedure](self.env, args)
         return self
 
     def evaluate (self):
