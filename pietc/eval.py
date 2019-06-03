@@ -1,5 +1,5 @@
 from functools import partial
-from pietc.debug import debuginfo
+from pietc.debug import debuginfo, active_prefixes
 
 class LambdaError (RuntimeError):
     pass
@@ -64,7 +64,6 @@ class Sequence (list):
 
     >>> from pietc import DEFAULT_ENV
     >>> from pietc.eval import Sequence
-    >>> from pietc.piet import active_lambdas
     >>> global_env = DEFAULT_ENV
     >>> sexpr = ['define', 'twice', ['lambda', ['x'], ['*', 2, 'x']]]
     >>> seq = Sequence(sexpr, global_env)
@@ -73,7 +72,7 @@ class Sequence (list):
     the environment `global_env` which isn't representable in piet.
 
     >>> seq.evaluate()
-    >>> list(seq) # there are no piet commands to run based on this expression.
+    >>> list(seq)
     []
     >>> global_env.lookup('twice')
     Lambda(['x'], ['*', 2, 'x'])
@@ -87,18 +86,19 @@ class Sequence (list):
     >>> res = _
 
     Since this expression is a call to a Lambda, the sequence pushes the
-    arguments onto the stack and returns the LambdaSequence to jump to.
+    arguments onto the stack followed by the LambdaSequence to jump to.
+    Afterward, the values pushed as arguments are sequentially popped.
 
     >>> list(seq)
-    [Push(10)]
+    [Push(10),
+     LambdaSequence([('x', 10)], ['*', 2, 'x'])
+     Push(1),
+     Push(-1),
+     Command(roll),
+     Command(pop)]
 
-    Assuming that the parent sequence pushed the Lambda's arguments onto the
-    stack, we will need to append the LambdaSequence to `active_lambdas` to
-    keep track of how deep the arguments get buried during evaluation. At the
-    moment this has to be done manually or from within recursively defined
-    functions.
+    Once the LambdaSequence is reached, we can evaluate it similarly.
 
-    >>> active_lambdas.append(res)
     >>> res.evaluate(); list(res)
     [Push(2),
      Push(1),
@@ -109,7 +109,6 @@ class Sequence (list):
      Push(1),
      Command(roll),
      Command(multiply)]
-    >>> active_lambdas.pop()
 
     """
     def __init__ (self, sexpr, env):
@@ -131,9 +130,16 @@ class Sequence (list):
             return LOOKUPPROC[procedure](self.env, args)
         return self
 
-    def evaluate (self):
+    def evaluate (self, debug=True):
         """Expand the s-expression using `evaluate`."""
-        return evaluate(self.sexpr, self.env, self)
+        global active_prefixes
+        prefixes = active_prefixes
+        if not debug:
+            active_prefixes = []
+        res = evaluate(self.sexpr, self.env, self)
+        if not debug:
+            active_prefixes = prefixes
+        return res
 
     def __call__ (self, seq, args):
         function = self.evaluate()
@@ -171,11 +177,17 @@ class LambdaSequence (MacroSequence):
                                 self.lamda.params))
         self.local_env = Environment(dict(zip(self.lamda.params, self.params)),
                                      parent_env=self.lamda.env)
-        self.param_offset = dict(map(reversed, enumerate(self.params)))
+        self.param_offset = dict(map(reversed,
+                                     enumerate(reversed(self.params))))
         self.stack_offset = 0
-        self.stack_size = len([arg for arg in self.args \
-                               if isinstance(arg, Atom)])
+        popable_args = [arg for arg in self.args if is_pushable(arg)]
+        self.stack_size = len(popable_args)
         super().__init__(self.lamda.sexpr, self.local_env)
+
+    def evaluate (self, **kwargs):
+        # reset the stack offset before evaluating.
+        self.stack_offset = 0
+        return super().evaluate(**kwargs)
 
     def param_depth (self, param):
         return self.stack_offset + self.param_offset[param]
@@ -196,14 +208,19 @@ class Lambda (object):
 
     def __call__ (self, seq, args):
         # calling a lambda requires modifying the sequence.
-        from pietc.piet import push_op
+        from pietc.piet import push_op, pop_op, roll_op
         if len(args) != len(self.params):
             raise RuntimeError('lambda: invalid number of parameters')
         debuginfo('{}({}, {})', self.__class__.__name__,
-                  self.sexpr, list(zip(self.params, args)),
+                  list(zip(self.params, args)), self.sexpr,
                   prefix='lambda call')
-        push_op(seq, *args)
-        return LambdaSequence(self, args)
+        lamda_seq = LambdaSequence(self, args)
+        seq.append(lamda_seq)
+        for _ in range(lamda_seq.stack_size):
+            push_op(seq, 1, -1)
+            roll_op(seq)
+            pop_op(seq)
+        return lamda_seq
 
     def __repr__ (self):
         return '{}({}, {})'.format(self.__class__.__name__,
@@ -229,7 +246,10 @@ class Parameter (object):
     @property
     def value (self):
         idx = self.lamda_seq.params.index(self)
-        return self.lamda_seq.args[idx]
+        val = self.lamda_seq.args[idx]
+        if isinstance(val, Parameter):
+            val = val.value
+        return val
 
     def __repr__ (self):
         return '{}({})'.format(self.__class__.__name__, self.symbol)
@@ -308,7 +328,23 @@ class ConditionalLambda (Conditional, MacroSequence):
                                          self.conditional.if_sexpr,
                                          self.conditional.else_sexpr)
 
-Atom = (int, Parameter, Sequence, Conditional, type(None))
+Atom = (int, Parameter, type(None))
+
+def is_pushable (atom):
+    if isinstance(atom, Parameter):
+        atom = atom.value
+    if isinstance(atom, Sequence):
+        # this is questionable, but needed to identify
+        # Sequences that have pushed a value
+        atom.evaluate(debug=False)
+        if not atom:
+            atom.clear()
+            return False
+        atom.clear()
+        return True
+    if not isinstance(atom, Atom):
+        return False
+    return True
 
 def get_atom (env, atom):
     if isinstance(atom, str):
@@ -362,9 +398,13 @@ def evaluate (sexpr, env, seq):
     Otherwise, this function returns `None`.
 
     """
+    from pietc.piet import push_op
     debuginfo('{}', sexpr, prefix='evaluating')
     if not isinstance(sexpr, list):
-        return get_atom(env, sexpr)
+        val = get_atom(env, sexpr)
+        if is_pushable(val):
+            push_op(seq, val)
+        return val
     # procedures are functions that manipulate program flow and the environment.
     procedure, *args = sexpr
     if isinstance(procedure, str) and procedure in LOOKUPPROC:

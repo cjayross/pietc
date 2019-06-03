@@ -4,12 +4,11 @@ from pietc import Program
 from pietc.parse import parser
 from pietc.eval import Environment, Sequence, MacroSequence, \
     LambdaSequence, Lambda, Parameter, Conditional, ConditionalLambda, \
-    LambdaError, evaluate
-from pietc.piet import Command, Push, active_lambdas, broadcast_stack_change, \
-    save_stack_offsets, restore_stack_offsets
+    Atom, LambdaError, evaluate
+from pietc.piet import Command, Push
+from pietc.debug import debuginfo
 
 stack = deque()
-stack_offset_buffer = deque()
 
 def printout (func):
     def wraps (*args, **kwargs):
@@ -17,12 +16,6 @@ def printout (func):
         print('{}: {}'.format(func.__name__, list(stack)))
         return res
     return wraps
-
-def expand (seq):
-    save_stack_offsets()
-    res = seq.evaluate()
-    restore_stack_offsets()
-    return list(seq) if res is None else [*list(seq), res]
 
 def get_condition (cond):
     while isinstance(cond, Conditional):
@@ -34,32 +27,23 @@ def get_condition (cond):
     return cond
 
 def jump_sim (seq):
-    if isinstance(seq, MacroSequence):
-        print('jump: {}'.format(seq))
-        if isinstance(seq, LambdaSequence):
-            active_lambdas.append(seq)
-    simulate(expand(seq))
-    if isinstance(seq, MacroSequence):
-        print('return: {}'.format(seq))
-        if isinstance(seq, LambdaSequence):
-            active_lambdas.pop()
-            for _ in range(seq.stack_size):
-                if seq.stack_offset != 0:
-                    push_sim(seq.stack_offset, -1)
-                    roll_sim()
-                pop_sim()
+    seq.evaluate()
+    if len(seq) != 0:
+        if isinstance(seq, MacroSequence):
+            print('jump: {}'.format(seq))
+        simulate(list(seq))
+        if isinstance(seq, MacroSequence):
+            print('return: {}'.format(seq))
 
 @printout
 def condition_sim (cond):
     simulate(expand(cond.test_seq))
     cond.choice = stack.pop()
-    broadcast_stack_change(-1)
     return cond if isinstance(cond, ConditionalLambda) else cond.choice
 
 @printout
 def pop_sim ():
     res = stack.pop()
-    broadcast_stack_change(-1)
     return res
 
 def push_sim (*args):
@@ -69,7 +53,6 @@ def push_sim (*args):
         if isinstance(arg, int):
             stack.append(arg)
             print('push_sim: {}'.format(list(stack)))
-            broadcast_stack_change(1)
         elif isinstance(arg, Sequence):
             jump_sim(arg)
         elif isinstance(arg, Parameter):
@@ -85,8 +68,6 @@ def push_sim (*args):
                 push_sim(depth + 1, 1)
                 roll_sim()
                 # param depth += 1, stack depth -= 1
-        # else:
-        #     raise RuntimeWarning('unexpected item pushed: {}'.format(arg))
 
 @printout
 def roll_sim ():
@@ -100,48 +81,40 @@ def roll_sim ():
     back = deque(stack, maxlen=depth+1)
     back.rotate(count)
     stack = deque(front + list(back))
-    broadcast_stack_change(-2)
 
 @printout
 def duplicate_sim ():
     stack.append(stack[-1])
-    broadcast_stack_change(1)
 
 @printout
 def add_sim ():
     x, y = stack.pop(), stack.pop()
     stack.append(y + x)
-    broadcast_stack_change(-1)
 
 @printout
 def subtract_sim ():
     x, y = stack.pop(), stack.pop()
     stack.append(y - x)
-    broadcast_stack_change(-1)
 
 @printout
 def multiply_sim ():
     x, y = stack.pop(), stack.pop()
     stack.append(y * x)
-    broadcast_stack_change(-1)
 
 @printout
 def divide_sim ():
     x, y = stack.pop(), stack.pop()
     stack.append(y // x)
-    broadcast_stack_change(-1)
 
 @printout
 def modulo_sim ():
     x, y = stack.pop(), stack.pop()
     stack.append(y % x)
-    broadcast_stack_change(-1)
 
 @printout
 def greater_sim ():
     x, y = stack.pop(), stack.pop()
     stack.append(int(y > x))
-    broadcast_stack_change(-1)
 
 @printout
 def not_sim ():
@@ -149,6 +122,7 @@ def not_sim ():
     stack.append(int(not x))
 
 LOOKUPSIM = {
+    'pop' : pop_sim,
     'roll' : roll_sim,
     'duplicate' : duplicate_sim,
     'add' : add_sim,
@@ -161,6 +135,7 @@ LOOKUPSIM = {
 }
 
 def simulate (seq):
+    debuginfo('{}', seq, prefix='simulating')
     for stmt in seq:
         if isinstance(stmt, Conditional):
             stmt = get_condition(stmt)
@@ -179,8 +154,8 @@ if __name__ == '__main__':
     program = Program()
     global_env = program.env
     for sexpr in code:
-        res = evaluate(sexpr, global_env, program)
-        if isinstance(res, (Sequence, Conditional)):
-            program.append(res)
-    print(program)
+        evaluate(sexpr, global_env, program)
+        # res = evaluate(sexpr, global_env, program)
+        # if isinstance(res, (Sequence, Conditional)):
+        #     program.append(res)
     simulate(program)

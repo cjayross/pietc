@@ -1,15 +1,15 @@
 DEBUG = True
 
 # uncomment filters to print their debug info.
-FILTERED_PREFIXES = [
-    'broadcast',
-    'evaluating',
-    'executing',
-    'lambda call',
-    'sequence call',
-    'conditional call',
+active_prefixes = [
+    # 'evaluating',
+    # 'executing',
+    'simulating',
+    # 'lambda call',
+    # 'sequence call',
+    # 'conditional call',
 ]
 
 def debuginfo (form, *args, prefix=''):
-    if DEBUG and not prefix in FILTERED_PREFIXES:
+    if DEBUG and prefix in active_prefixes:
         print('{}: {}'.format(prefix, form.format(*args)))

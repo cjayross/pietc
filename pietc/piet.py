@@ -1,6 +1,6 @@
 import numpy as np
 from collections import deque
-from pietc.eval import Sequence, LambdaSequence, Parameter, Conditional
+from pietc.eval import Sequence, LambdaSequence, Parameter, Conditional, Atom
 from pietc.debug import debuginfo
 
 COMMAND_DIFFERENTIALS = {
@@ -22,8 +22,6 @@ COMMAND_DIFFERENTIALS = {
     'out_int' : (5,1),
     'out' : (5,2),
 }
-
-active_lambdas = deque()
 
 class Command (object):
     def __init__ (self, name):
@@ -57,21 +55,13 @@ class Operation (object):
     def __repr__ (self):
         return '{}({})'.format(self.__class__.__name__, self.op.__name__)
 
-def broadcast_stack_change (stack_delta):
-    for seq in active_lambdas:
+def notify_stack_change (seq, stack_delta):
+    if isinstance(seq, LambdaSequence):
         seq.stack_offset += stack_delta
         debuginfo('{} ({} -> {})',
                   seq, seq.stack_offset - stack_delta,
                   seq.stack_offset,
                   prefix='broadcast')
-
-def save_stack_offsets ():
-    for lamda in active_lambdas:
-        stack_offset_buffer.append(lamda.stack_offset)
-
-def restore_stack_offsets ():
-    for lamda in active_lambdas:
-        lamda.stack_offset = stack_offset_buffer.popleft()
 
 def unary_op (seq, args, op):
     if len(args) != 1:
@@ -82,7 +72,7 @@ def binary_op (seq, args, op):
     if len(args) < 2:
         raise RuntimeError('%s: insufficient number of arguments' % op.__name__)
     op(seq, *args[0:2])
-    broadcast_stack_change(-1)
+    notify_stack_change(seq, -1)
 
 def strict_binary_op (seq, args, op):
     if len(args) > 2:
@@ -99,7 +89,7 @@ def condition_op (seq, args):
     cond = Conditional(if_sexpr, else_sexpr, seq.env)
     push_op(cond.test_seq, test_sexpr)
     # a jump call pops a value off of the stack.
-    broadcast_stack_change(-1)
+    notify_stack_change(seq, -1)
     # this operation returns a value since it does not push onto the stack.
     return cond
 
@@ -110,7 +100,7 @@ def push_op (seq, *args):
     for arg in args:
         if isinstance(arg, int):
             seq.append(Push(arg))
-            broadcast_stack_change(1)
+            notify_stack_change(seq, 1)
         elif isinstance(arg, (Sequence, Conditional)):
             # the sequence will handle broadcasting stack changes
             seq.append(Push(arg))
@@ -127,56 +117,48 @@ def push_op (seq, *args):
                 push_op(seq, depth + 1, 1)
                 roll_op(seq)
                 # param depth += 1, stack depth -= 1
-        # else:
-        #     raise RuntimeWarning('unexpected item pushed: {}'.format(arg))
 
-def duplicate_op (seq):
+def pop_op (seq, *args):
+    seq.append(Command('pop'))
+    notify_stack_change(seq, -1)
+
+def duplicate_op (seq, *args):
     seq.append(Command('duplicate'))
-    broadcast_stack_change(1)
+    notify_stack_change(seq, 1)
 
-def roll_op (seq):
+def roll_op (seq, *args):
     seq.append(Command('roll'))
-    broadcast_stack_change(-2)
+    notify_stack_change(seq, -2)
 
 def add_op (seq, *args):
-    push_op(seq, *args)
     seq.append(Command('add'))
 
 def subtract_op (seq, *args):
-    push_op(seq, *args)
     seq.append(Command('subtract'))
 
 def multiply_op (seq, *args):
-    push_op(seq, *args)
     seq.append(Command('multiply'))
 
 def divide_op (seq, *args):
-    push_op(seq, *args)
     seq.append(Command('divide'))
 
 def negate_op (seq, *args):
-    push_op(seq, 0, *args)
     seq.append(Command('subtract'))
 
 def modulo_op (seq, *args):
-    push_op(seq, *args)
     seq.append(Command('mod'))
 
 def equal_op (seq, *args):
-    push_op(seq, *args)
     seq.append(Command('subtract'))
     seq.append(Command('not'))
 
 def not_equal_op (seq, *args):
-    push_op(seq, *args)
     seq.append(Command('subtract'))
 
 def greater_op (seq, *args):
-    push_op(seq, *args)
     seq.append(Command('greater'))
 
 def less_op (seq, *args):
-    push_op(seq, *args)
     seq.append(Push(1, 1))
     seq.append(Command('roll'))
     seq.append(Command('greater'))
@@ -190,7 +172,6 @@ def less_or_equal_op (seq, *args):
     seq.append(Command('not'))
 
 def not_op (seq, *args):
-    push_op(seq, *args)
     seq.append(Command('not'))
 
 def or_op (seq, *args):
