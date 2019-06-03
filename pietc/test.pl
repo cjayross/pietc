@@ -19,7 +19,7 @@
 ;; ((repeat twice) 5)
 ;; ((repeat (repeat twice)) 5)
 ;; ((repeat twice) ((repeat identity) 5))
-((hold 5) identity)
+;; ((hold 5) identity)
 
 ;; ;; Conditional Tests
 ;; (if #t 5 0)

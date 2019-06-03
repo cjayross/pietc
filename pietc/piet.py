@@ -43,18 +43,6 @@ class Push (Command):
     def __repr__ (self):
         return '{}({})'.format(self.__class__.__name__, self.value)
 
-class Operation (object):
-    def __init__ (self, optype, op):
-        self.optype = optype
-        self.op = op
-
-    def __call__ (self, seq, args):
-        return self.optype(seq, args, op=self.op) \
-            if self.optype else self.op(seq, args)
-
-    def __repr__ (self):
-        return '{}({})'.format(self.__class__.__name__, self.op.__name__)
-
 def notify_stack_change (seq, stack_delta):
     if isinstance(seq, LambdaSequence):
         seq.stack_offset += stack_delta
@@ -63,28 +51,7 @@ def notify_stack_change (seq, stack_delta):
                   seq.stack_offset,
                   prefix='broadcast')
 
-def unary_op (seq, args, op):
-    if len(args) != 1:
-        raise RuntimeError('%s: invalid number of arguments' % op.__name__)
-    op(seq, *args)
-
-def binary_op (seq, args, op):
-    if len(args) < 2:
-        raise RuntimeError('%s: insufficient number of arguments' % op.__name__)
-    op(seq, *args[0:2])
-    notify_stack_change(seq, -1)
-
-def strict_binary_op (seq, args, op):
-    if len(args) > 2:
-        raise RuntimeError('%s: too many arguments' % op.__name__)
-    binary_op(seq, args, op)
-
-def associative_binary_op (seq, args, op):
-    binary_op(seq, args, op)
-    for arg in args[2:]:
-        op(seq, arg)
-
-def condition_op (seq, args):
+def condition_op (seq, *args):
     test_sexpr, if_sexpr, else_sexpr = args if len(args) == 3 else (*args, None)
     cond = Conditional(if_sexpr, else_sexpr, seq.env)
     push_op(cond.test_seq, test_sexpr)
@@ -131,48 +98,55 @@ def roll_op (seq, *args):
     notify_stack_change(seq, -2)
 
 def add_op (seq, *args):
-    seq.append(Command('add'))
+    for _ in range(len(args) - 1):
+        seq.append(Command('add'))
+        notify_stack_change(seq, -1)
 
 def subtract_op (seq, *args):
-    seq.append(Command('subtract'))
+    for _ in range(len(args) - 1):
+        seq.append(Command('subtract'))
+        notify_stack_change(seq, -1)
 
 def multiply_op (seq, *args):
-    seq.append(Command('multiply'))
+    for _ in range(len(args) - 1):
+        seq.append(Command('multiply'))
+        notify_stack_change(seq, -1)
 
 def divide_op (seq, *args):
-    seq.append(Command('divide'))
-
-def negate_op (seq, *args):
-    seq.append(Command('subtract'))
+    for _ in range(len(args) - 1):
+        seq.append(Command('divide'))
+        notify_stack_change(seq, -1)
 
 def modulo_op (seq, *args):
     seq.append(Command('mod'))
-
-def equal_op (seq, *args):
-    seq.append(Command('subtract'))
-    seq.append(Command('not'))
-
-def not_equal_op (seq, *args):
-    seq.append(Command('subtract'))
+    notify_stack_change(seq, -1)
 
 def greater_op (seq, *args):
     seq.append(Command('greater'))
-
-def less_op (seq, *args):
-    seq.append(Push(1, 1))
-    seq.append(Command('roll'))
-    seq.append(Command('greater'))
-
-def greater_or_equal_op (seq, *args):
-    less_op(seq, *args)
-    seq.append(Command('not'))
-
-def less_or_equal_op (seq, *args):
-    greater_op(seq, *args)
-    seq.append(Command('not'))
+    notify_stack_change(seq, -1)
 
 def not_op (seq, *args):
     seq.append(Command('not'))
+
+def equal_op (seq, *args):
+    subtract_op(seq, *args)
+    not_op(seq, *args)
+
+def not_equal_op (seq, *args):
+    subtract_op(seq, *args)
+
+def less_op (seq, *args):
+    push_op(seq, 1, 1)
+    roll_op(seq, *args)
+    greater_op(seq, *args)
+
+def greater_or_equal_op (seq, *args):
+    less_op(seq, *args)
+    not_op(seq, *args)
+
+def less_or_equal_op (seq, *args):
+    greater_op(seq, *args)
+    not_op(seq, *args)
 
 def or_op (seq, *args):
     add_op(seq, *args)

@@ -141,10 +141,10 @@ class Sequence (list):
             active_prefixes = prefixes
         return res
 
-    def __call__ (self, seq, args):
+    def __call__ (self, seq, *args):
         function = self.evaluate()
         debuginfo('{}({})', function, args, prefix='sequence call')
-        return function(seq, args)
+        return function(seq, *args)
 
     def __repr__ (self):
         return '{}({})'.format(self.__class__.__name__, self.sexpr)
@@ -206,7 +206,7 @@ class Lambda (object):
         self.sexpr = sexpr
         self.env = env
 
-    def __call__ (self, seq, args):
+    def __call__ (self, seq, *args):
         # calling a lambda requires modifying the sequence.
         from pietc.piet import push_op, pop_op, roll_op
         if len(args) != len(self.params):
@@ -414,4 +414,4 @@ def evaluate (sexpr, env, seq):
     # operators are functions that manipulate the sequence.
     operator, *operand = map(partial(evaluate, env=env, seq=seq), tuple(sexpr))
     debuginfo('{}({})', operator, operand, prefix='executing')
-    return operator(seq, operand)
+    return operator(seq, *operand)
