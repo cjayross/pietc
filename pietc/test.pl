@@ -6,6 +6,7 @@
 (define repeat (lambda (f) (lambda (y) (f (f y)))))
 (define verbose (lambda (f) (lambda (y) (f y))))
 (define hold (lambda (y) (lambda (f) (f y))))
+(define macro (repeat identity))
 
 ;; Lambda Tests
 ;; (sum 10 20 30)
@@ -25,6 +26,10 @@
 ;; ((repeat twice) ((repeat identity) 5))
 ;; ((hold 5) identity)
 
+;; Macro Tests
+;; (macro 5)
+((verbose macro) 5)
+
 ;; ;; Conditional Tests
 ;; (if #t 5 0)
 ;; (if #f 5 0)
@@ -36,4 +41,4 @@
 ;; (identity (twice (if #t 5)))
 ;; ((if #t identity) 5)
 ;; ((if #t (verbose identity)) 5)
-((verbose (verbose (if #t identity))) 5)
+;; ((verbose (verbose (if #t identity))) 5)
