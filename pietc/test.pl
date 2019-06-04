@@ -35,5 +35,5 @@
 ;; (identity (if #t 5))
 ;; (identity (twice (if #t 5)))
 ;; ((if #t identity) 5)
-((if #t (verbose identity)) 5)
-;; ((verbose (verbose (if #t identity))) 5)
+;; ((if #t (verbose identity)) 5)
+((verbose (verbose (if #t identity))) 5)

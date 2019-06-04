@@ -289,12 +289,19 @@ class Conditional (object):
         sexpr = self.if_sexpr if value else self.else_sexpr
         self.seq = Sequence(sexpr, self.env)
 
-    def __call__ (self, seq, args):
+    def __call__ (self, seq, *args):
+        from pietc.piet import push_op, pop_op, roll_op
+        debuginfo('{}({})', self, args, prefix='conditional call')
         if not self.has_choice:
-            debuginfo('{}({})', self, args, prefix='conditional call')
-            return ConditionalLambda(self, args)
+            cond_lamda = ConditionalLambda(self, args)
+            popable_args = [arg for arg in args if is_pushable(arg)]
+            seq.append(cond_lamda)
+            for _ in range(len(popable_args)):
+                push_op(seq, 1, -1)
+                roll_op(seq)
+                pop_op(seq)
+            return cond_lamda
         function = self.seq.expand()
-        debuginfo('{}({})', function, args, prefix='conditional call')
         return function(seq, args)
 
     def __repr__ (self):
@@ -304,31 +311,28 @@ class Conditional (object):
 class ConditionalLambda (Conditional, MacroSequence):
     """Represent a Conditional with stored arguments."""
     def __init__ (self, conditional, args):
+        print(args)
         self.conditional = conditional
-        self.args = args
+        self.args = list(args)
 
     @property
     def choice (self):
-        return self.conditional.choice
+        return self.conditional.choice(self, *self.args)
 
     @choice.setter
     def choice (self, value):
         self.conditional.choice = value
 
-    def expand (self):
-        if self.has_choice:
-            return self.choice(self, self.args)
-
     def __getattr__ (self, attr):
         if hasattr(self.conditional, attr):
             return getattr(self.conditional, attr)
-        return Sequence.__getattribute__(self, attr)
+        return MacroSequence.__getattribute__(self, attr)
 
     def __repr__ (self):
-        return '{}({}, [{}, {}])'.format(self.__class__.__name__,
-                                         self.args,
+        return '{}([{}, {}], {})'.format(self.__class__.__name__,
                                          self.conditional.if_sexpr,
-                                         self.conditional.else_sexpr)
+                                         self.conditional.else_sexpr,
+                                         self.args)
 
 Atom = (int, Parameter, type(None))
 

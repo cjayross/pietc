@@ -59,9 +59,7 @@ def condition_op (seq, *args):
     return cond
 
 def push_op (seq, *args):
-    """
-    Place a set of arguments onto the top of the stack.
-    """
+    """Place a set of arguments onto the top of the stack."""
     for arg in args:
         if isinstance(arg, int):
             seq.append(Push(arg))

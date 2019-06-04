@@ -17,7 +17,7 @@ def printout (func):
 
 def get_condition (cond):
     res = cond.choice if cond.has_choice else condition_sim(cond)
-    if not isinstance(res, MacroSequence):
+    if not isinstance(cond, MacroSequence):
         print('jump: {} -> {}'.format(cond, res))
     return res
 
