@@ -271,7 +271,6 @@ class Conditional (object):
 
     """
     def __init__ (self, if_sexpr, else_sexpr, env):
-        self.test_seq = Sequence(None, env)
         self.if_sexpr = if_sexpr
         self.else_sexpr = else_sexpr
         self.seq = None
@@ -316,7 +315,7 @@ class ConditionalLambda (Conditional, MacroSequence):
     def choice (self, value):
         self.conditional.choice = value
 
-    def evaluate (self):
+    def expand (self):
         if self.has_choice:
             return self.choice(self, self.args)
 
@@ -407,7 +406,7 @@ def evaluate (sexpr, env, seq):
     if isinstance(procedure, str) and procedure in LOOKUPPROC:
         return LOOKUPPROC[procedure](env, args)
     elif procedure == 'if':
-        return env.lookup(procedure)(seq, args)
+        return env.lookup(procedure)(seq, *args)
     # operators are functions that manipulate the sequence.
     operator, *operand = map(partial(evaluate, env=env, seq=seq), tuple(sexpr))
     debuginfo('{}({})', operator, operand, prefix='executing')

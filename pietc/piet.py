@@ -54,10 +54,8 @@ def notify_stack_change (seq, stack_delta):
 def condition_op (seq, *args):
     test_sexpr, if_sexpr, else_sexpr = args if len(args) == 3 else (*args, None)
     cond = Conditional(if_sexpr, else_sexpr, seq.env)
-    push_op(cond.test_seq, test_sexpr)
-    # a jump call pops a value off of the stack.
-    notify_stack_change(seq, -1)
-    # this operation returns a value since it does not push onto the stack.
+    test_seq = Sequence(test_sexpr, seq.env)
+    seq.extend([test_seq, cond])
     return cond
 
 def push_op (seq, *args):
@@ -68,9 +66,6 @@ def push_op (seq, *args):
         if isinstance(arg, int):
             seq.append(Push(arg))
             notify_stack_change(seq, 1)
-        elif isinstance(arg, (Sequence, Conditional)):
-            # the sequence will handle broadcasting stack changes
-            seq.append(Push(arg))
         elif isinstance(arg, Parameter):
             # depth = param depth + stack depth
             depth = arg.param_depth

@@ -2,9 +2,7 @@ from functools import wraps
 from collections import deque
 from pietc import Program
 from pietc.parse import parser
-from pietc.eval import Environment, Sequence, MacroSequence, \
-    LambdaSequence, Lambda, Parameter, Conditional, ConditionalLambda, \
-    Atom, LambdaError, evaluate
+from pietc.eval import Sequence, MacroSequence, Conditional, evaluate
 from pietc.piet import Command, Push
 from pietc.debug import debuginfo
 
@@ -18,13 +16,10 @@ def printout (func):
     return wraps
 
 def get_condition (cond):
-    while isinstance(cond, Conditional):
-        res = cond.choice if cond.has_choice else condition_sim(cond)
-        if isinstance(cond, MacroSequence):
-            break
+    res = cond.choice if cond.has_choice else condition_sim(cond)
+    if not isinstance(res, MacroSequence):
         print('jump: {} -> {}'.format(cond, res))
-        cond = res
-    return cond
+    return res
 
 def jump_sim (seq):
     seq.expand()
@@ -37,37 +32,17 @@ def jump_sim (seq):
 
 @printout
 def condition_sim (cond):
-    simulate(expand(cond.test_seq))
     cond.choice = stack.pop()
-    return cond if isinstance(cond, ConditionalLambda) else cond.choice
+    return cond if isinstance(cond, MacroSequence) else cond.choice
 
 @printout
 def pop_sim ():
     res = stack.pop()
     return res
 
-def push_sim (*args):
-    for arg in args:
-        if isinstance(arg, Conditional):
-            arg = get_condition(arg)
-        if isinstance(arg, int):
-            stack.append(arg)
-            print('push_sim: {}'.format(list(stack)))
-        elif isinstance(arg, Sequence):
-            jump_sim(arg)
-        elif isinstance(arg, Parameter):
-            # depth = param depth + stack depth
-            depth = arg.param_depth
-            if depth != 0:
-                push_sim(depth, -1)
-                roll_sim()
-                # param depth -= 1, stack depth += 1
-            duplicate_sim()
-            # stack depth += 1
-            if depth != 0:
-                push_sim(depth + 1, 1)
-                roll_sim()
-                # param depth += 1, stack depth -= 1
+@printout
+def push_sim (value):
+    stack.append(value)
 
 @printout
 def roll_sim ():
@@ -145,8 +120,6 @@ def simulate (seq):
             LOOKUPSIM[stmt.name]()
         elif isinstance(stmt, Sequence):
             jump_sim(stmt)
-        else:
-            push_sim(stmt)
 
 if __name__ == '__main__':
     with open('test.pl') as File:
@@ -155,7 +128,4 @@ if __name__ == '__main__':
     global_env = program.env
     for sexpr in code:
         evaluate(sexpr, global_env, program)
-        # res = evaluate(sexpr, global_env, program)
-        # if isinstance(res, (Sequence, Conditional)):
-        #     program.append(res)
     simulate(program)

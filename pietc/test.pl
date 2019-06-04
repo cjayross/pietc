@@ -23,7 +23,7 @@
 ;; ((repeat (repeat twice)) 5)
 ;; (((repeat repeat) twice) 5)
 ;; ((repeat twice) ((repeat identity) 5))
-((hold 5) identity)
+;; ((hold 5) identity)
 
 ;; ;; Conditional Tests
 ;; (if #t 5 0)
@@ -31,7 +31,9 @@
 ;; (if #t 5)
 ;; (if #f 5)
 ;; (if #t (+ 2 2))
+;; (if (eq 5 5) 5)
 ;; (identity (if #t 5))
 ;; (identity (twice (if #t 5)))
-;; ((if #t (verbose identity)) 5)
+;; ((if #t identity) 5)
+((if #t (verbose identity)) 5)
 ;; ((verbose (verbose (if #t identity))) 5)
