@@ -71,7 +71,7 @@ class Sequence (list):
     Evaluate the Sequence. In this case, all that is done is a modification of
     the environment `global_env` which isn't representable in piet.
 
-    >>> seq.evaluate()
+    >>> seq.expand()
     >>> list(seq)
     []
     >>> global_env.lookup('twice')
@@ -81,13 +81,13 @@ class Sequence (list):
 
     >>> sexpr = ['twice', 10]
     >>> seq = Sequence(sexpr, global_env)
-    >>> seq.evaluate()
+    >>> seq.expand()
     LambdaSequence([('x', 10)], ['*', 2, 'x'])
     >>> res = _
 
     Since this expression is a call to a Lambda, the sequence pushes the
-    arguments onto the stack followed by the LambdaSequence to jump to.
-    Afterward, the values pushed as arguments are sequentially popped.
+    arguments onto the stack then jumps to a LambdaSequence. Afterward, the
+    values pushed as arguments are popped.
 
     >>> list(seq)
     [Push(10),
@@ -99,7 +99,7 @@ class Sequence (list):
 
     Once the LambdaSequence is reached, we can evaluate it similarly.
 
-    >>> res.evaluate(); list(res)
+    >>> res.expand(); list(res)
     [Push(2),
      Push(1),
      Push(-1),
@@ -117,6 +117,8 @@ class Sequence (list):
         # to store a deepcopy of the environment so that the scope
         # for this sequence remains static past this point.
         self.env = env
+        self.expanded = False
+        self.eval_result = None
 
     def peek_sexpr (self):
         """Return a simplification of the Sequence if possible."""
@@ -130,8 +132,10 @@ class Sequence (list):
             return LOOKUPPROC[procedure](self.env, args)
         return self
 
-    def evaluate (self, debug=True):
+    def expand(self, debug=True):
         """Expand the s-expression using `evaluate`."""
+        if self.expanded:
+            return self.eval_result
         global active_prefixes
         prefixes = active_prefixes
         if not debug:
@@ -139,10 +143,12 @@ class Sequence (list):
         res = evaluate(self.sexpr, self.env, self)
         if not debug:
             active_prefixes = prefixes
-        return res
+        self.expanded = True
+        self.eval_result = res
+        return self.eval_result
 
     def __call__ (self, seq, *args):
-        function = self.evaluate()
+        function = self.expand()
         debuginfo('{}({})', function, args, prefix='sequence call')
         return function(seq, *args)
 
@@ -184,11 +190,6 @@ class LambdaSequence (MacroSequence):
         self.stack_size = len(popable_args)
         super().__init__(self.lamda.sexpr, self.local_env)
 
-    def evaluate (self, **kwargs):
-        # reset the stack offset before evaluating.
-        self.stack_offset = 0
-        return super().evaluate(**kwargs)
-
     def param_depth (self, param):
         return self.stack_offset + self.param_offset[param]
 
@@ -216,10 +217,12 @@ class Lambda (object):
                   prefix='lambda call')
         lamda_seq = LambdaSequence(self, args)
         seq.append(lamda_seq)
-        for _ in range(lamda_seq.stack_size):
-            push_op(seq, 1, -1)
-            roll_op(seq)
-            pop_op(seq)
+        lamda_seq.expand(debug=False)
+        if lamda_seq.stack_offset != 0:
+            for _ in range(lamda_seq.stack_size):
+                push_op(seq, 1, -1)
+                roll_op(seq)
+                pop_op(seq)
         return lamda_seq
 
     def __repr__ (self):
@@ -291,7 +294,7 @@ class Conditional (object):
         if not self.has_choice:
             debuginfo('{}({})', self, args, prefix='conditional call')
             return ConditionalLambda(self, args)
-        function = self.seq.evaluate()
+        function = self.seq.expand()
         debuginfo('{}({})', function, args, prefix='conditional call')
         return function(seq, args)
 
@@ -334,14 +337,8 @@ def is_pushable (atom):
     if isinstance(atom, Parameter):
         atom = atom.value
     if isinstance(atom, Sequence):
-        # this is questionable, but needed to identify
-        # Sequences that have pushed a value
-        atom.evaluate(debug=False)
-        if not atom:
-            atom.clear()
-            return False
-        atom.clear()
-        return True
+        atom.expand(debug=False)
+        return True if atom else False
     if not isinstance(atom, Atom):
         return False
     return True

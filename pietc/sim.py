@@ -27,7 +27,7 @@ def get_condition (cond):
     return cond
 
 def jump_sim (seq):
-    seq.evaluate()
+    seq.expand()
     if len(seq) != 0:
         if isinstance(seq, MacroSequence):
             print('jump: {}'.format(seq))
