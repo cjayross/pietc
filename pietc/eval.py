@@ -1,5 +1,5 @@
 from functools import partial
-from pietc.debug import debuginfo, active_prefixes
+from pietc.debug import debuginfo, debugcontext
 
 class LambdaError (RuntimeError):
     pass
@@ -136,13 +136,8 @@ class Sequence (list):
         """Expand the s-expression using `evaluate`."""
         if self.expanded:
             return self.eval_result
-        global active_prefixes
-        prefixes = active_prefixes
-        if not debug:
-            active_prefixes = []
-        res = evaluate(self.sexpr, self.env, self)
-        if not debug:
-            active_prefixes = prefixes
+        with debugcontext(debug):
+            res = evaluate(self.sexpr, self.env, self)
         self.expanded = True
         self.eval_result = res
         return self.eval_result
