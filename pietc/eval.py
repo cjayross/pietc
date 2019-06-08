@@ -412,6 +412,6 @@ def evaluate (sexpr, env, seq):
     elif procedure == 'if':
         return env.lookup(procedure)(seq, *args)
     # operators are functions that manipulate the sequence.
-    operator, *operand = map(partial(evaluate, env=env, seq=seq), tuple(sexpr))
+    operator, *operand = map(partial(evaluate, env=env, seq=seq), sexpr)
     debuginfo('{}({})', operator, operand, prefix='executing')
     return operator(seq, *operand)
