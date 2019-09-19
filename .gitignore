@@ -2,3 +2,6 @@
 __pycache__
 parse.log
 TAGS
+
+pietc/parser.out
+pietc/parsetab.py

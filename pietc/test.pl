@@ -20,7 +20,7 @@
 ;; (twice (identity 5))
 ;; (twice ((verbose identity) 5))
 ;; ((repeat identity) 5)
-;; ((repeat twice) 5)
+((repeat twice) 5)
 ;; ((repeat (repeat twice)) 5)
 ;; (((repeat repeat) twice) 5)
 ;; ((repeat twice) ((repeat identity) 5))
@@ -28,7 +28,7 @@
 
 ;; Macro Tests
 ;; (macro 5)
-((verbose macro) 5)
+;; ((verbose macro) 5)
 
 ;; ;; Conditional Tests
 ;; (if #t 5 0)
